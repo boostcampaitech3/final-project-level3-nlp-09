@@ -170,6 +170,7 @@ cython_debug/
 
 # 추가한 파일 및 폴더
 README.md
+data/
 
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
