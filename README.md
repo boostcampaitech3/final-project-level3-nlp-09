@@ -1,4 +1,4 @@
-# Text Style Transfer를 활용한 구어체 <-> 문어체 변환 Styler
+# 회의록 Open-domain Question Answering
 > 네이버 부스트캠프 AI Tech 3기 최종 프로젝트
 
 
