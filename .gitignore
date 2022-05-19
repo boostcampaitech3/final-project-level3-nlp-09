@@ -172,6 +172,7 @@ cython_debug/
 README.md
 data/
 read_data.ipynb
+dacon_baseline.ipynb
 
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
