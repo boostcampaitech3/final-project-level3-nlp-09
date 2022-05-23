@@ -207,8 +207,8 @@ def run_sparse_retrieval(
     datasets: DatasetDict,
     training_args: TrainingArguments,
     data_args: DataTrainingArguments,
-    data_path: str = "model/",
-    context_path: str = "wikipedia_documents.json",
+    data_path: str = "/opt/ml/input/data/",
+    context_path: str = "/opt/ml/input/data/wikipedia_documents.json",
 ) -> DatasetDict:
 
     # Query에 맞는 Passage들을 Retrieval 합니다.
