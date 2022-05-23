@@ -180,6 +180,7 @@ wandb/
 test_record/
 EDA/
 runs/
+env/
 #shell_script_files
 *.sh
 # PyCharm

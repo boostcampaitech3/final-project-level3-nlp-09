@@ -12,7 +12,7 @@ class ModelArguments:
     """
 
     model_name_or_path: str = field(
-        default="klue/bert-base",
+        default="/opt/ml/input/final-project-level3-nlp-09/model/models/train_dataset",
         metadata={
             "help": "Path to pretrained model or model identifier from huggingface.co/models"
         },

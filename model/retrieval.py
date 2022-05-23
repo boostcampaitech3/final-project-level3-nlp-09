@@ -26,8 +26,8 @@ class SparseRetrieval:
     def __init__(
         self,
         tokenize_fn,
-        data_path: Optional[str] = "./",
-        context_path: Optional[str] = "wikipedia_documents.json",
+        data_path: Optional[str] = "/opt/ml/input/data",
+        context_path: Optional[str] = "/opt/ml/input/data/wikipedia_documents.json",
     ) -> NoReturn:
 
         """
