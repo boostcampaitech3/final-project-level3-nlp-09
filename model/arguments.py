@@ -12,7 +12,7 @@ class ModelArguments:
     """
 
     model_name_or_path: str = field(
-        default="/opt/ml/input/final-project-level3-nlp-09/model/models/train_dataset",
+        default="Nonegom/roberta_curriculum_learn",
         metadata={
             "help": "Path to pretrained model or model identifier from huggingface.co/models"
         },
@@ -90,7 +90,7 @@ class DataTrainingArguments:
         metadata={"help": "Define how many clusters to use for faiss."},
     )
     top_k_retrieval: int = field(
-        default=10,
+        default=40,
         metadata={
             "help": "Define how many top-k passages to retrieve based on similarity."
         },

@@ -9,7 +9,7 @@ import sys
 
 sys.path.append("model")
 from typing import Callable, Dict, List, NoReturn, Tuple
-
+from retrieval_es import ElasticRetrieval
 import numpy as np
 import streamlit as st
 from datasets import Dataset, DatasetDict, Features, Value, load_metric
@@ -113,7 +113,7 @@ def run_mrc(
             stride=data_args.doc_stride,
             return_overflowing_tokens=True,
             return_offsets_mapping=True,
-            # return_token_type_ids=False, # roberta모델을 사용할 경우 False, bert를 사용할 경우 True로 표기해야합니다.
+            return_token_type_ids=False, # roberta모델을 사용할 경우 False, bert를 사용할 경우 True로 표기해야합니다.
             padding="max_length" if data_args.pad_to_max_length else False,
         )
 
@@ -212,11 +212,12 @@ def run_sparse_retrieval(
 ) -> DatasetDict:
 
     # Query에 맞는 Passage들을 Retrieval 합니다.
-    retriever = SparseRetrieval(
-        tokenize_fn=tokenize_fn, data_path=data_path, context_path=context_path
-    )
-    retriever.get_sparse_embedding()
-
+    # retriever = SparseRetrieval(
+    #     tokenize_fn=tokenize_fn, data_path=data_path, context_path=context_path
+    # )
+    
+    # retriever.get_sparse_embedding()
+    retriever = ElasticRetrieval("origin-wiki")
     if data_args.use_faiss:
         retriever.build_faiss(num_clusters=data_args.num_clusters)
         df = retriever.retrieve_faiss(

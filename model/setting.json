@@ -1,0 +1,33 @@
+{
+    "settings": {
+        "analysis": {
+            "filter": {
+                "my_shingle": {
+                    "type": "shingle"
+                }
+            },
+            "analyzer": {
+                "my_analyzer": {
+                    "type": "custom",
+                    "tokenizer": "nori_tokenizer",
+                    "decompound_mode": "mixed",
+                    "filter": ["my_shingle"]
+                }
+            },
+            "similairty": {
+                "my_similarity": {
+                    "type": "BM25"
+                }
+            }
+        }
+    },
+
+    "mappings": {
+        "properties": {
+            "document_text": {
+                "type": "text",
+                "analyzer": "my_analyzer"
+            }
+        }
+    }
+}
