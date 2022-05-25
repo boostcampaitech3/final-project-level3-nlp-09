@@ -98,3 +98,12 @@ class DataTrainingArguments:
     use_faiss: bool = field(
         default=False, metadata={"help": "Whether to build with faiss"}
     )
+    elastic: bool = field(
+        default=True, metadata={"help": "Whether to use Elasticsearch"}
+    )
+    index_name: str = field(
+        default="origin-wiki", metadata={"help": "Define the name if index when using Elasticsearch"}
+    )
+    # bm25: bool = field(
+    #     default=True, metadata={"help": "Whether to use BM25"}
+    # )
