@@ -12,7 +12,7 @@ class ModelArguments:
     """
 
     model_name_or_path: str = field(
-        default="Nonegom/roberta_curriculum_learn",
+        default="/opt/ml/input/final-project-level3-nlp-09/model/models/train_dataset2/checkpoint-800",
         metadata={
             "help": "Path to pretrained model or model identifier from huggingface.co/models"
         },
@@ -90,7 +90,7 @@ class DataTrainingArguments:
         metadata={"help": "Define how many clusters to use for faiss."},
     )
     top_k_retrieval: int = field(
-        default=40,
+        default=5,
         metadata={
             "help": "Define how many top-k passages to retrieve based on similarity."
         },
@@ -98,3 +98,12 @@ class DataTrainingArguments:
     use_faiss: bool = field(
         default=False, metadata={"help": "Whether to build with faiss"}
     )
+    elastic: bool = field(
+        default=True, metadata={"help": "Whether to use Elasticsearch"}
+    )
+    index_name: str = field(
+        default="origin-meeting-wiki", metadata={"help": "Define the name if index when using Elasticsearch"}
+    )
+    # bm25: bool = field(
+    #     default=True, metadata={"help": "Whether to use BM25"}
+    # )

@@ -10,3 +10,4 @@ datasets==2.2.2
 transformers==4.19.2
 wandb==0.12.16
 elasticsearch==8.2.0
+streamlit==1.9.0

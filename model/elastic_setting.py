@@ -41,7 +41,6 @@ def preprocess(text):
     text = re.sub(r"#", " ", text)
     text = re.sub(r"[^A-Za-z0-9가-힣.?!,()~‘’“”"":%&《》〈〉''㈜·\-\'+\s一-龥サマーン]", "", text)  # サマーン 는 predictions.json에 있었음
     text = re.sub(r"\s+", " ", text).strip()  # 두 개 이상의 연속된 공백을 하나로 치환
-    # text = re.sub(r"[^A-Za-z0-9가-힣.?!,()~‘’“”"":%&《》〈〉''㈜·\-\'+\s一-龥]", "", text)
     
     return text
 
@@ -113,8 +112,8 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="")
     parser.add_argument("--setting_path", default="./setting.json", type=str, help="생성할 index의 setting.json 경로를 설정해주세요")
-    parser.add_argument("--dataset_path", default="/opt/ml/input/data/wikipedia_documents.json", type=str, help="삽입할 데이터의 경로를 설정해주세요")
-    parser.add_argument("--index_name", default="origin-wiki", type=str, help="테스트할 index name을 설정해주세요")
+    parser.add_argument("--dataset_path", default="../data/meeting_collection.json", type=str, help="삽입할 데이터의 경로를 설정해주세요")
+    parser.add_argument("--index_name", default="origin-meeting-wiki", type=str, help="테스트할 index name을 설정해주세요")
 
     args = parser.parse_args()
     main(args)
