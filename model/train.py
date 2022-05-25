@@ -4,7 +4,7 @@ import sys
 from typing import NoReturn
 import wandb
 from arguments import DataTrainingArguments, ModelArguments
-from datasets import DatasetDict, load_from_disk, load_metric
+from datasets import DatasetDict, load_from_disk, load_metric, load_dataset
 from trainer_qa import QuestionAnsweringTrainer
 from transformers import (
     AutoConfig,
@@ -55,7 +55,8 @@ def main():
     # 모델을 초기화하기 전에 난수를 고정합니다.
     set_seed(training_args.seed)
 
-    datasets = load_from_disk(data_args.dataset_name)
+    datasets = load_dataset('csv', data_files={'train':"/opt/ml/input/meeting_data/train.csv", 
+    'validation': '/opt/ml/input/meeting_data/validation.csv'})
     print(datasets)
 
     # AutoConfig를 이용하여 pretrained model 과 tokenizer를 불러옵니다.
@@ -160,16 +161,16 @@ def run_mrc(
 
             # 하나의 example이 여러개의 span을 가질 수 있습니다.
             sample_index = sample_mapping[i]
-            answers = examples[answer_column_name][sample_index]
+            answers = eval(examples[answer_column_name][sample_index])
 
             # answer가 없을 경우 cls_index를 answer로 설정합니다(== example에서 정답이 없는 경우 존재할 수 있음).
-            if len(answers["answer_start"]) == 0:
+            if answers["text"] == '@':
                 tokenized_examples["start_positions"].append(cls_index)
                 tokenized_examples["end_positions"].append(cls_index)
             else:
                 # text에서 정답의 Start/end character index
-                start_char = answers["answer_start"][0]
-                end_char = start_char + len(answers["text"][0])
+                start_char = answers["answer_start"]
+                end_char = start_char + len(answers["text"])
 
                 # text에서 current span의 Start token index
                 token_start_index = 0
@@ -294,10 +295,16 @@ def run_mrc(
             return formatted_predictions
 
         elif training_args.do_eval:
-            references = [
-                {"id": ex["id"], "answers": ex[answer_column_name]}
-                for ex in datasets["validation"]
-            ]
+            references = []
+            for ex in datasets["validation"]:
+                answers = eval(ex[answer_column_name])
+                answers["answer_start"] = [answers["answer_start"]]
+                answers["text"] = [answers["text"]]
+                references.append({"id": ex["id"], "answers": answers})
+            # references = [
+            #     {"id": ex["id"], "answers": eval(ex[answer_column_name])}
+            #     for ex in datasets["validation"]
+            # ]
             return EvalPrediction(
                 predictions=formatted_predictions, label_ids=references
             )
