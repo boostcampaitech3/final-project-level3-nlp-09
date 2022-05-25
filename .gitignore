@@ -171,6 +171,18 @@ cython_debug/
 # 추가한 파일 및 폴더
 README.md
 
+upload_data.ipynb
+dacon_baseline.ipynb
+# Our_Project
+outputs/
+models/
+wandb/
+test_record/
+EDA/
+runs/
+env/
+#shell_script_files
+*.sh
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
