@@ -9,6 +9,27 @@
 [detailTales](https://github.com/detailTales)|[nonegom](https://github.com/nonegom)|[wogkr810](https://github.com/wogkr810)|[maxha97](https://github.com/maxha97)|[HanNayeoniee](https://github.com/HanNayeoniee)
 gimty97@gmail.com|fksl9959@naver.com |jaehahk810@naver.com|maxha97@naver.com |nayeon2.han@gmail.com
 
+## Installation
+```
+# 파이썬 버전 확인 (3.8.5 확인)
+python3 --version 
+
+# venv 설치
+sudo apt-get install python3-venv 
+
+# 가상환경 생성하기
+python3 -m venv [venv_name] 
+
+# 가상환경 활성화(생성한 가상환경 폴더가 있는 경로에서 활성화 해야 함)
+source [venv_name]/bin/activate 
+
+# 라이브러리 설치
+pip install -r requirements.txt
+
+# 가상환경 종료
+deactivate
+```
+
 
 ## Commit Rule
 ```
