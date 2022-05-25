@@ -170,8 +170,8 @@ cython_debug/
 
 # 추가한 파일 및 폴더
 README.md
-data/
-read_data.ipynb
+
+upload_data.ipynb
 dacon_baseline.ipynb
 # Our_Project
 outputs/
