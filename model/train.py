@@ -55,8 +55,8 @@ def main():
     # 모델을 초기화하기 전에 난수를 고정합니다.
     set_seed(training_args.seed)
 
-    datasets = load_dataset('csv', data_files={'train':"/opt/ml/input/meeting_data/train.csv", 
-    'validation': '/opt/ml/input/meeting_data/validation.csv'})
+    datasets = load_dataset('csv', data_files={'train':"/opt/ml/input/final-project-level3-nlp-09/data/train.csv", 
+    'validation': '/opt/ml/input/final-project-level3-nlp-09/data/validation.csv'})
     print(datasets)
 
     # AutoConfig를 이용하여 pretrained model 과 tokenizer를 불러옵니다.
@@ -113,7 +113,7 @@ def run_mrc(
     question_column_name = "question" if "question" in column_names else column_names[0]
     context_column_name = "context" if "context" in column_names else column_names[1]
     answer_column_name = "answers" if "answers" in column_names else column_names[2]
-
+    print(column_names, question_column_name, context_column_name, answer_column_name)
     # Padding에 대한 옵션을 설정합니다.
     # (question|context) 혹은 (context|question)로 세팅 가능합니다.
     pad_on_right = tokenizer.padding_side == "right"

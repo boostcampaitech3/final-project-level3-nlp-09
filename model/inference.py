@@ -217,7 +217,7 @@ def run_sparse_retrieval(
     # )
     
     # retriever.get_sparse_embedding()
-    retriever = ElasticRetrieval("origin-wiki")
+    retriever = ElasticRetrieval("origin-meeting-wiki")
     if data_args.use_faiss:
         retriever.build_faiss(num_clusters=data_args.num_clusters)
         df = retriever.retrieve_faiss(

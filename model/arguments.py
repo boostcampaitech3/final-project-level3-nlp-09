@@ -12,7 +12,7 @@ class ModelArguments:
     """
 
     model_name_or_path: str = field(
-        default="Nonegom/roberta_curriculum_learn",
+        default="/opt/ml/input/final-project-level3-nlp-09/model/models/train_dataset2/checkpoint-800",
         metadata={
             "help": "Path to pretrained model or model identifier from huggingface.co/models"
         },
@@ -42,7 +42,7 @@ class DataTrainingArguments:
         metadata={"help": "The name of the dataset to use."},
     )
     overwrite_cache: bool = field(
-        default=False,
+        default=True,
         metadata={"help": "Overwrite the cached training and evaluation sets"},
     )
     preprocessing_num_workers: Optional[int] = field(
@@ -90,7 +90,7 @@ class DataTrainingArguments:
         metadata={"help": "Define how many clusters to use for faiss."},
     )
     top_k_retrieval: int = field(
-        default=40,
+        default=5,
         metadata={
             "help": "Define how many top-k passages to retrieve based on similarity."
         },
