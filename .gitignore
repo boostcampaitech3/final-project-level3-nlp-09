@@ -181,6 +181,7 @@ test_record/
 EDA/
 runs/
 env/
+assets/
 #shell_script_files
 *.sh
 # PyCharm
