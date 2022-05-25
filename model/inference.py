@@ -9,7 +9,6 @@ import sys
 
 sys.path.append("model")
 from typing import Callable, Dict, List, NoReturn, Tuple
-from retrieval_es import ElasticRetrieval
 import numpy as np
 import streamlit as st
 from datasets import Dataset, DatasetDict, Features, Value, load_metric
@@ -24,7 +23,7 @@ from transformers import (
 )
 
 from arguments import DataTrainingArguments, ModelArguments
-from retrieval import SparseRetrieval
+from retrieval import SparseRetrieval, ElasticRetrieval
 from trainer_qa import QuestionAnsweringTrainer
 from utils_qa import postprocess_qa_predictions
 
@@ -212,12 +211,16 @@ def run_sparse_retrieval(
 ) -> DatasetDict:
 
     # Query에 맞는 Passage들을 Retrieval 합니다.
-    # retriever = SparseRetrieval(
-    #     tokenize_fn=tokenize_fn, data_path=data_path, context_path=context_path
-    # )
     
-    # retriever.get_sparse_embedding()
-    retriever = ElasticRetrieval("origin-wiki")
+    # Elasticsearch 사용하는 경우
+    if data_args.elastic:
+        retriever = ElasticRetrieval(data_args.index_name)
+    else:
+        retriever = SparseRetrieval(
+            tokenize_fn=tokenize_fn, data_path=data_path, context_path=context_path
+        )
+        retriever.get_sparse_embedding()
+
     if data_args.use_faiss:
         retriever.build_faiss(num_clusters=data_args.num_clusters)
         df = retriever.retrieve_faiss(
