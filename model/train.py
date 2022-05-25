@@ -55,8 +55,8 @@ def main():
     # 모델을 초기화하기 전에 난수를 고정합니다.
     set_seed(training_args.seed)
 
-    datasets = load_dataset('csv', data_files={'train':"/opt/ml/input/meeting_data/train.csv", 
-    'validation': '/opt/ml/input/meeting_data/validation.csv'})
+    datasets = load_dataset('csv', data_files={'train':"../data/train.csv", 
+    'validation': '../data/validation.csv'})
     print(datasets)
 
     # AutoConfig를 이용하여 pretrained model 과 tokenizer를 불러옵니다.
