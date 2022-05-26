@@ -6,7 +6,7 @@ Open-Domain Question Answering 을 수행하는 inference 코드 입니다.
 
 
 import sys
-
+import logging
 sys.path.append("model")
 from typing import Callable, Dict, List, NoReturn, Tuple
 import numpy as np
@@ -20,8 +20,9 @@ from transformers import (
     EvalPrediction,
     HfArgumentParser,
     TrainingArguments,
+    set_seed
 )
-
+import pandas as pd
 from arguments import DataTrainingArguments, ModelArguments
 from retrieval import SparseRetrieval, ElasticRetrieval
 from trainer_qa import QuestionAnsweringTrainer
@@ -54,8 +55,6 @@ def load_model():
     )
 
     return model, tokenizer
-
-
 def run_mrc(
     data_args: DataTrainingArguments,
     training_args: TrainingArguments,
@@ -67,7 +66,11 @@ def run_mrc(
 ) -> NoReturn:
     parser = HfArgumentParser((ModelArguments, DataTrainingArguments))
     model_args, data_args = parser.parse_args_into_dataclasses()
-    my_dict = {"question": [query], "id": ["answer"]}
+    if query != None:
+        my_dict = {"question": [query], "id": ["answer"]}
+    else:
+        pd_test = pd.read_csv("../data/test.csv")
+        my_dict = {"question":list(pd_test["question"]),"id":list(map(str,pd_test["id"]))}
     datasets = DatasetDict()
     datasets["validation"] = Dataset.from_dict(my_dict)
     datasets = run_sparse_retrieval(
@@ -228,3 +231,14 @@ def run_sparse_retrieval(
 
     datasets = DatasetDict({"validation": Dataset.from_pandas(df, features=f)})
     return datasets
+
+logger = logging.getLogger(__name__)
+
+def main():
+    model, tokenizer = load_model()
+    set_seed(42)
+    run_mrc(None, None, None, None, tokenizer, model, None)
+
+
+if __name__ == "__main__":
+    main()
