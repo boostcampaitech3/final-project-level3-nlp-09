@@ -182,6 +182,7 @@ EDA/
 runs/
 env/
 assets/
+tmp_trainer/
 #shell_script_files
 *.sh
 # PyCharm

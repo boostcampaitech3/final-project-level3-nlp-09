@@ -12,7 +12,7 @@ class ModelArguments:
     """
 
     model_name_or_path: str = field(
-        default="/opt/ml/input/final-project-level3-nlp-09/model/models/train_dataset2/checkpoint-800",
+        default= "model/models/train_model/checkpoint-700", # "klue/roberta-large",
         metadata={
             "help": "Path to pretrained model or model identifier from huggingface.co/models"
         },
