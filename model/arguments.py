@@ -12,7 +12,7 @@ class ModelArguments:
     """
 
     model_name_or_path: str = field(
-        default= "./models/train_model/model_RL_700", # "klue/roberta-large",
+        default= "klue/roberta-large", # "klue/roberta-large",
         metadata={
             "help": "Path to pretrained model or model identifier from huggingface.co/models"
         },

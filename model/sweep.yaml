@@ -15,6 +15,12 @@ parameters:
     value: True
   evaluation_strategy:
     value: "steps"
+  eval_steps:
+    value: 100
+  save_steps:
+    value: 100
+  logging_steps:
+    value: 100
   learning_rate:
     values: [1e-5, 3e-5, 5e-5]
   num_train_epochs:
