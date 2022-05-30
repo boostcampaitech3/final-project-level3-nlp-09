@@ -28,7 +28,6 @@ def main():
     )
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
     #training_args.per_device_train_batch_size = 4
-
     # WandB Init
     project = "test-project-CG"  
     entity_name = "level3-nlp-09"
@@ -43,7 +42,7 @@ def main():
     else:
         print("Not Use sweep")
         pass
-
+    training_args.report_to = ['wandb']
     print(f"model is from {model_args.model_name_or_path}")
     print(f"data is from {data_args.dataset_name}")
 
