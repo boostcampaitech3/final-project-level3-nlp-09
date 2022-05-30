@@ -1,5 +1,7 @@
 import streamlit as st
 from streamlit_chat import message
+import streamlit_modal as modal
+import json
 
 from model.inference import load_model, run_mrc
 
@@ -22,13 +24,17 @@ with st.sidebar:
     st.session_state['uploaded_files'] = st.file_uploader('정해진 형식의 회의록을 올려주세요!(json)',accept_multiple_files=True)
     minutes_list =[files.name.split(".")[0] for files in st.session_state['uploaded_files']]
     options = list(range(len(minutes_list)))
-    print(options, st.session_state['uploaded_files'])
     selected_minutes = st.selectbox(f'회의록 목록(개수: {len(minutes_list)}): ', options, 
                                     format_func = lambda x: minutes_list[x])
-    print(selected_minutes)
     submit_minute = st.button(label="회의록 보기", disabled=(False if st.session_state['uploaded_files'] else True)) 
     if submit_minute:
-        st.text_area(minutes_list[selected_minutes], st.json(st.session_state['uploaded_files'][selected_minutes]))
+        modal.open()
+
+
+if modal.is_open():
+    with modal.container():
+        st_json = json.dumps(st.session_state['uploaded_files'][selected_minutes].read().decode('utf-8'))
+        st.write(st_json)
 
 # 입력 
 with st.form(key="my_form", clear_on_submit=True):
@@ -58,7 +64,6 @@ if submit:
         message(msg[0], is_user=msg[1])
     with st.spinner("두뇌 풀가동!"):
         result = run_mrc(None, None, None, None, tokenizer, model, msg[0])
-
     msg = (result, False)
     st.session_state.messages.append(msg)
     message(msg[0], is_user=msg[1])
