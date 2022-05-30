@@ -1,0 +1,29 @@
+# sweep.yaml
+program: train.py
+method: grid
+metric:
+  name: eval/f1
+  goal: maximize
+parameters:
+  do_train:
+    value: True
+  do_eval:
+    value: True
+  output_dir:
+    value: ./models/train_dataset
+  overwrite_output_dir:
+    value: True
+  evaluation_strategy:
+    value: "steps"
+  eval_steps:
+    value: 100
+  save_steps:
+    value: 100
+  logging_steps:
+    value: 100
+  learning_rate:
+    values: [1e-5, 3e-5, 5e-5]
+  num_train_epochs:
+    values: [3, 5]
+  per_device_train_batch_size:
+    values: [8, 16]

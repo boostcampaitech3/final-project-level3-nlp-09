@@ -2,7 +2,7 @@ import json
 import pandas as pd
 from datasets import load_metric 
 def main():
-    with open("/opt/ml/input/final-project-level3-nlp-09/model/tmp_trainer/predictions.json", "r") as f:
+    with open("./tmp_trainer/predictions.json", "r") as f:
         predictions = json.load(f)
     
     predictions = [

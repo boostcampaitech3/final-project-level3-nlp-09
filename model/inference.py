@@ -69,7 +69,7 @@ def run_mrc(
     if query != None:
         my_dict = {"question": [query], "id": ["answer"]}
     else:
-        pd_test = pd.read_csv("/opt/ml/input/final-project-level3-nlp-09/data/test.csv")
+        pd_test = pd.read_csv("../data/test.csv")
         my_dict = {"question":list(pd_test["question"]),"id":list(map(str,pd_test["id"]))}
     datasets = DatasetDict()
     datasets["validation"] = Dataset.from_dict(my_dict)

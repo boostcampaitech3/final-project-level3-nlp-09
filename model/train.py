@@ -17,19 +17,32 @@ from transformers import (
     set_seed,
 )
 from utils_qa import check_no_error, postprocess_qa_predictions
+from ray.tune.integration.wandb import wandb_mixin
 
 logger = logging.getLogger(__name__)
 
-
+@wandb_mixin
 def main():
     parser = HfArgumentParser(
         (ModelArguments, DataTrainingArguments, TrainingArguments)
     )
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
-    print(model_args.model_name_or_path)
     #training_args.per_device_train_batch_size = 4
+    # WandB Init
+    project = "test-project-CG"  
+    entity_name = "level3-nlp-09"
+    display_name =  f"{model_args.model_name_or_path}"
+    wandb.init(project=project, entity=entity_name, name=display_name)
+    # if config in wandb change
+    config = wandb.config
+    if len(dict(config)) != 0:
+        training_args.learning_rate= config["learning_rate"]
+        training_args.num_train_epochs= config["num_train_epochs"]
+        training_args.per_device_train_batch_size= config["per_device_train_batch_size"]
+    else:
+        print("Not Use sweep")
+        pass
     training_args.report_to = ['wandb']
-    
     print(f"model is from {model_args.model_name_or_path}")
     print(f"data is from {data_args.dataset_name}")
 
@@ -87,13 +100,6 @@ def run_mrc(
     tokenizer,
     model,
 ) -> NoReturn:
-
-    # WandB Init
-    project = "test-project"  
-    entity_name = "level3-nlp-09"
-    display_name =  "test"
-    wandb.init(project=project, entity=entity_name, name=display_name)
-
 
     # Dataset Preprocessing
     if training_args.do_train:
