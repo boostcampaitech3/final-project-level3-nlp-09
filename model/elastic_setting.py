@@ -191,23 +191,42 @@ def search_all(es, index_name):
     return res
     
 
-def main1(args):
+# def main1(args):
+#     """
+#     사용자가 처음 회의록을 삽입하는 경우
+#     """
+#     es, index_name = es_setting(index_name=args.index_name)
+#     initial_index(es, index_name, args.setting_path)
+#     insert_data(es, index_name, args.dataset_path, type="json")
+
+
+#     query = "제154회 완주군의회 임시회 제2차 본회의에서 5분 발언을 한 사람은 누구야?"
+#     res = es_search(es, index_name, query, 10)
+#     print("========== RETRIEVE RESULTS ==========")
+#     pprint.pprint(res)
+
+#     print('\n=========== RETRIEVE SCORES ==========\n')
+#     for hit in res['hits']['hits']:
+#         print("Doc ID: %3r  Score: %5.2f" % (hit['_id'], hit['_score']))
+
+def first(index_name, setting_path):
     """
     사용자가 처음 회의록을 삽입하는 경우
     """
-    es, index_name = es_setting(index_name=args.index_name)
-    initial_index(es, index_name, args.setting_path)
+    # setting_path = "./setting.json"
+    es, index_name = es_setting(index_name=index_name)
+    initial_index(es, index_name, setting_path)
     insert_data(es, index_name, args.dataset_path, type="json")
 
 
-    query = "제154회 완주군의회 임시회 제2차 본회의에서 5분 발언을 한 사람은 누구야?"
-    res = es_search(es, index_name, query, 10)
-    print("========== RETRIEVE RESULTS ==========")
-    pprint.pprint(res)
+    # query = "제154회 완주군의회 임시회 제2차 본회의에서 5분 발언을 한 사람은 누구야?"
+    # res = es_search(es, index_name, query, 10)
+    # print("========== RETRIEVE RESULTS ==========")
+    # pprint.pprint(res)
 
-    print('\n=========== RETRIEVE SCORES ==========\n')
-    for hit in res['hits']['hits']:
-        print("Doc ID: %3r  Score: %5.2f" % (hit['_id'], hit['_score']))
+    # print('\n=========== RETRIEVE SCORES ==========\n')
+    # for hit in res['hits']['hits']:
+    #     print("Doc ID: %3r  Score: %5.2f" % (hit['_id'], hit['_score']))
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="")
