@@ -12,7 +12,7 @@ class ModelArguments:
     """
 
     model_name_or_path: str = field(
-        default= "klue/roberta-large", # "klue/roberta-large",
+        default= "Nonegom/roberta_finetune_twice", # "klue/roberta-large",
         metadata={
             "help": "Path to pretrained model or model identifier from huggingface.co/models"
         },
@@ -90,7 +90,7 @@ class DataTrainingArguments:
         metadata={"help": "Define how many clusters to use for faiss."},
     )
     top_k_retrieval: int = field(
-        default=3,
+        default=1,
         metadata={
             "help": "Define how many top-k passages to retrieve based on similarity."
         },
