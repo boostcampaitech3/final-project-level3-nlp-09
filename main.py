@@ -161,11 +161,13 @@ with st.form(key="input_form", clear_on_submit=True):
 if modal.is_open() and st.session_state["messages"]:
     if open_other_ans_modal:
         with modal.container():
+            st.title("다른 회의록에서 찾은 답")
             st.write(
                 st.session_state.result_text_and_ids
             )
     elif open_minute_modal:
         with modal.container():
-            st.write(
-                st.session_state.result_context
-            )
+            title = st.session_state.result_context["회의 제목"]
+            context = st.session_state.result_context["내용"]
+            st.title(f"해당 회의록: {title}")
+            st.text_area(label="", value=context, height=500, disabled=False)
