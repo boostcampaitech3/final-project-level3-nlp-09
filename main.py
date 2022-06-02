@@ -2,7 +2,7 @@ import streamlit as st
 from streamlit_chat import message
 import streamlit_modal as modal
 import json
-from elastic_setting import *
+from model.elastic_setting import *
 
 from model.inference import load_model, run_mrc
 
@@ -18,19 +18,16 @@ if "messages" not in st.session_state:
     st.session_state["messages"] = []
 if "uploaded_files" not in st.session_state:
     st.session_state["uploaded_files"] = []
-if "user" not in st.session_state:
-    st.session_state["user"] = ""
 if "user_ids" not in st.session_state:
     st.session_state["user_ids"] = []
 
 # 회의록 입력
 with st.sidebar:
+    st.title('사용자 ID를 입력해주세요!')
+    user = st.text_input("사용자 ID", placeholder="User_1", key="user", disabled=False)
     st.title('회의록을 입력해주세요!')
-    
-    st.text_input("사용자 ID", placeholder="홍길동", key="user", disabled=False)
-    st.session_state["user_ids"].append(st.session_state["user"])
-
-    st.session_state['uploaded_files'] = st.file_uploader('정해진 형식의 회의록을 올려주세요!(json)',accept_multiple_files=True)
+    st.session_state['uploaded_files'] = st.file_uploader('정해진 형식의 회의록을 올려주세요!(json)', accept_multiple_files=True, disabled= (False if user else True))
+    print(st.session_state['uploaded_files'])
     minutes_list =[files.name.split(".")[0] for files in st.session_state['uploaded_files']] # 모든 회의록 파일명
     options = list(range(len(minutes_list)))
 
@@ -50,7 +47,6 @@ if modal.is_open():
         # print(st.session_state['uploaded_files'][selected_minutes].read().decode('utf-8'))
         # st_json = json.dumps(st.session_state['uploaded_files'][selected_minutes].read().decode('utf-8')) # 파일 형식에 따라서 주기
         data = st.session_state['uploaded_files'][selected_minutes].read().decode('utf-8')
-        print(st.session_state['uploaded_files'])
         st.title(minutes_list[selected_minutes])
         st.write(data)
 
