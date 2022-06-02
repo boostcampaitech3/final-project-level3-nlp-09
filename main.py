@@ -26,21 +26,13 @@ if "messages" not in st.session_state:
     st.session_state["messages"] = []
 if "uploaded_files" not in st.session_state:
     st.session_state["uploaded_files"] = []
-if "user_ids" not in st.session_state:
-    st.session_state["user_ids"] = []
 
 # 회의록 입력
 with st.sidebar:
     st.title('사용자 ID를 입력해주세요!')
-    user = st.text_input("사용자 ID", placeholder="User_1", key="user", disabled=False)
+    user = st.text_input("사용자 ID", placeholder="user_1", key="user", disabled=False)
     st.title('회의록을 입력해주세요!')
     
-    st.text_input("사용자 ID", placeholder="홍길동", key="user", disabled=False)
-    st.session_state["user_ids"].append(st.session_state["user"])
-    # 유효한 user_id만 필터링
-    user_ids = list(set(st.session_state["user_ids"]))
-    user_ids = [id for id in user_ids if len(id) != 0]
-
     st.session_state['uploaded_files'] = st.file_uploader('정해진 형식의 회의록을 올려주세요!(txt)',accept_multiple_files=True, disabled= (False if user else True))
     minutes_list =[files.name.split(".")[0] for files in st.session_state['uploaded_files']] # 모든 회의록 파일명
     options = list(range(len(minutes_list)))
@@ -59,23 +51,22 @@ if modal.is_open():
         print("Modal is open...")
             
         st.title(minutes_list[selected_minutes])
-        st.write(data)
+        st.text_area(label="", value=data, height=500, disabled=False)
+
 
 
 # TODO: user_ids가 비어있는 경우 처리하기
-if user_ids[-1]:
-    user_index = user_ids[-1]
+if user:
+    setting_path = "./model/setting.json"
+    es, user_index = es_setting(index_name=user)
 
-setting_path = "./model/setting.json"
-es, user_index = es_setting(index_name=user_index)
+    if st.session_state["uploaded_files"] is not None:
+        corpus = read_uploadedfile(st.session_state["uploaded_files"])
 
-if st.session_state["uploaded_files"] is not None:
-    corpus = read_uploadedfile(st.session_state["uploaded_files"])
-
-if es.indices.exists(index=user_index):
-    user_setting(es, user_index, corpus, type="second", setting_path=setting_path)
-else:
-    user_setting(es, user_index, corpus, type="first", setting_path=setting_path)
+    if es.indices.exists(index=user_index):
+        user_setting(es, user_index, corpus, type="second", setting_path=setting_path)
+    else:
+        user_setting(es, user_index, corpus, type="first", setting_path=setting_path)
 
 
 # 입력 
