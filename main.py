@@ -74,17 +74,17 @@ with st.sidebar:
     start_chat = st.button(label="질문 시작하기", disabled=(False if st.session_state['uploaded_files'] else True)) 
 
 
-    if submit_minute:
-        modal.open()
+#     if submit_minute:
+#         modal.open()
 
-if modal.is_open():
-    with modal.container():
-        # st_json = json.dumps(st.session_state['uploaded_files'][selected_minutes].read().decode('utf-8')) # 파일 형식에 따라서 주기
-        data = st.session_state['uploaded_files'][selected_minutes].read().decode('utf-8')
-        print("Modal is open...")
+# if modal.is_open():
+#     with modal.container():
+#         # st_json = json.dumps(st.session_state['uploaded_files'][selected_minutes].read().decode('utf-8')) # 파일 형식에 따라서 주기
+#         data = st.session_state['uploaded_files'][selected_minutes].read().decode('utf-8')
+#         print("Modal is open...")
             
-        st.title(minutes_list[selected_minutes])
-        st.text_area(label="", value=data, height=500, disabled=False)
+#         st.title(minutes_list[selected_minutes])
+#         st.text_area(label="", value=data, height=500, disabled=False)
 
 
 if user:
