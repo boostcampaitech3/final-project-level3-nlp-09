@@ -63,6 +63,7 @@ def run_mrc(
     tokenizer,
     model,
     query,
+    es_index = "origin-meeting-wiki"
 ) -> NoReturn:
     parser = HfArgumentParser((ModelArguments, DataTrainingArguments))
     model_args, data_args = parser.parse_args_into_dataclasses()
@@ -78,6 +79,7 @@ def run_mrc(
         datasets,
         None,
         data_args,
+        es_index=es_index
     )
     column_names = datasets["validation"].column_names
     question_column_name = (
@@ -360,6 +362,7 @@ def run_sparse_retrieval(
     datasets: DatasetDict,
     training_args: TrainingArguments,
     data_args: DataTrainingArguments,
+    es_index: str,
     data_path: str = "../data/",
     context_path: str = "../data/wikipedia_documents.json",
 ) -> DatasetDict:
@@ -368,7 +371,7 @@ def run_sparse_retrieval(
     
     # Elasticsearch 사용하는 경우
     if data_args.elastic:
-        retriever = ElasticRetrieval(data_args.index_name)
+        retriever = ElasticRetrieval(es_index)
     else:
         retriever = SparseRetrieval(
             tokenize_fn=tokenize_fn, data_path=data_path, context_path=context_path
