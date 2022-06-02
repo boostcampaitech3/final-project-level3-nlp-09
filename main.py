@@ -31,28 +31,41 @@ if "user" not in st.session_state:
 if "user_ids" not in st.session_state:
     st.session_state["user_ids"] = []
 
+def uploader_callback():
+    print('Uploaded file')
+
 # 회의록 입력
 with st.sidebar:
     st.title('회의록을 입력해주세요!')
     
-    st.text_input("사용자 ID", placeholder="홍길동", key="user", disabled=False)
+    user = st.text_input("프로젝트 ID", placeholder="홍길동", key="user", disabled=False)
     st.session_state["user_ids"].append(st.session_state["user"])
     # 유효한 user_id만 필터링
     user_ids = list(set(st.session_state["user_ids"]))
     user_ids = [id for id in user_ids if len(id) != 0]
 
-    st.session_state['uploaded_files'] = st.file_uploader('정해진 형식의 회의록을 올려주세요!(txt)',accept_multiple_files=True)
+    st.session_state['uploaded_files'] = st.file_uploader('정해진 형식의 회의록을 올려주세요!(txt)', accept_multiple_files=True)    
     minutes_list =[files.name.split(".")[0] for files in st.session_state['uploaded_files']] # 모든 회의록 파일명
     options = list(range(len(minutes_list)))
     print("모든 회의록: {}".format(minutes_list))
 
+    duplicate_flag = False
+    if len(st.session_state['uploaded_files']) != len(list(set(st.session_state['uploaded_files']))):
+        st.session_state['uploaded_files'] = list(set(st.session_state['uploaded_files']))
+        duplicate_flag = True
+        print("중복된 회의록이 존재합니다!")
+
     selected_minutes = st.selectbox(f'회의록 목록(개수: {len(minutes_list)}): ', options, 
                                     format_func = lambda x: minutes_list[x])
     submit_minute = st.button(label="회의록 보기", disabled=(False if st.session_state['uploaded_files'] else True)) 
+    start_chat = st.button(label="질문 시작하기", disabled=(False if st.session_state['uploaded_files'] else True)) 
+    col1, col2 = st.columns([1, 1])
+
+
     if submit_minute:
         modal.open()
 
-if modal.is_open():
+if modal.is_open() and not duplicate_flag:
     with modal.container():
         # st_json = json.dumps(st.session_state['uploaded_files'][selected_minutes].read().decode('utf-8')) # 파일 형식에 따라서 주기
         data = st.session_state['uploaded_files'][selected_minutes].read().decode('utf-8')
@@ -62,19 +75,16 @@ if modal.is_open():
         st.write(data)
 
 
-# TODO: user_ids가 비어있는 경우 처리하기
-if user_ids[-1]:
-    user_index = user_ids[-1]
+if user:
+    user_index = user
 
 setting_path = "./model/setting.json"
-es, user_index = es_setting(index_name=user_index)
 
-if st.session_state["uploaded_files"] is not None:
-    corpus = read_uploadedfile(st.session_state["uploaded_files"])
+if start_chat:
+    es, user_index = es_setting(index_name=user_index)
+    if st.session_state["uploaded_files"] is not None:
+        corpus = read_uploadedfile(st.session_state["uploaded_files"])
 
-if es.indices.exists(index=user_index):
-    user_setting(es, user_index, corpus, type="second", setting_path=setting_path)
-else:
     user_setting(es, user_index, corpus, type="first", setting_path=setting_path)
 
 
