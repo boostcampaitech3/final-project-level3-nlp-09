@@ -3,6 +3,7 @@ from collections import defaultdict
 import streamlit as st
 from streamlit_chat import message
 import streamlit_modal as modal
+import traitlets
 
 from model.elastic_setting import *
 from model.inference import load_model, run_mrc
@@ -30,20 +31,30 @@ with st.sidebar:
     st.title('회의록을 입력해주세요!')
 
 
-    st.session_state['uploaded_files'] = st.file_uploader('정해진 형식의 회의록을 올려주세요!(txt)',accept_multiple_files=True, disabled= (False if user else True)) 
-    minutes_list =[files.name.split(".")[0] for files in st.session_state['uploaded_files']] # 모든 회의록 파일명
-    options = list(range(len(minutes_list)))
-    print("모든 회의록: {}".format(minutes_list))
+    st.session_state['uploaded_files'] = st.file_uploader('정해진 형식의 회의록을 올려주세요!(txt)',accept_multiple_files=True, disabled= (False if user else True))
+    
+    # 중복 파일 제거
+    file_names = []
+    uploaded_files = []
+    for file in st.session_state['uploaded_files']:
+        if file.name not in file_names:
+            file_names.append(file.name)
+            uploaded_files.append(file)
 
-    # if len(st.session_state['uploaded_files']) != len(list(set(st.session_state['uploaded_files']))):
-    #     print("중복된 회의록이 존재합니다!")
-    st.session_state['uploaded_files'] = list(set(st.session_state['uploaded_files']))  # 중복 파일 제거
+    print("filtering: {}".format(uploaded_files))
+    print(type(uploaded_files))
+
+
+
+    minutes_list =[files.name.split(".")[0] for files in uploaded_files] # 모든 회의록 파일명
+    options = list(range(len(minutes_list)))
+    print("모든 회의록: {}".format(minutes_list)) 
+    
     
     selected_minutes = st.selectbox(f'회의록 목록(개수: {len(minutes_list)}): ', options, 
                                     format_func = lambda x: minutes_list[x])
     submit_minute = st.button(label="회의록 보기", disabled=(False if st.session_state['uploaded_files'] else True)) 
-    start_chat = st.button(label="질문 시작하기", disabled=(False if st.session_state['uploaded_files'] else True)) 
-    col1, col2 = st.columns([1, 1])
+    # start_chat = st.button(label="질문 시작하기", disabled=(False if st.session_state['uploaded_files'] else True)) 
 
 
     if submit_minute:
@@ -65,12 +76,16 @@ if user:
 setting_path = "./model/setting.json"
 
 # "질문 시작하기" 버튼이 눌리면 사용자 인덱스에 문서 삽입
-if start_chat:
-    es, user_index = es_setting(index_name=user_index)
-    if st.session_state["uploaded_files"] is not None:
-        corpus = read_uploadedfile(st.session_state["uploaded_files"])
+# if start_chat:
 
-    user_setting(es, user_index, corpus, type="first", setting_path=setting_path)
+es, user_index = es_setting(index_name=user_index)
+if st.session_state["uploaded_files"] is not None:
+    corpus = read_uploadedfile(uploaded_files)
+    # corpus, titles = read_uploadedfile(uploaded_files)
+    # print("titles:", titles)
+    print("corpus:", corpus)
+
+user_setting(es, user_index, corpus, type="first", setting_path=setting_path)
 
 
 # 입력 

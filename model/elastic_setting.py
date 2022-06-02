@@ -160,15 +160,26 @@ def read_uploadedfile(files):
     사용자가 업로드한 파일 읽어서 elasticsearch 입력 형태에 맞춰 반환
     """
     texts = []
+    titles = []
     for file in files:
+        title = file.name.split(".")[0]
         text = file.read().decode('utf-8')
         texts.append(text)
+        print("파일 제목:", str(title))
+        titles.append(title)
         
     texts = [preprocess(text) for text in texts]
     corpus = [
         {"document_text": texts[i]} for i in range(len(texts))
     ]
+    # corpus = [
+    #     {"document_text": texts[i]} for i in range(len(texts)),
+    #     {"document_title": titles[i]} for i in range(len(titles))
+    # ]
+    print(len(corpus))
+    print(len(titles))
 
+    # return corpus, titles
     return corpus
 
 def update_doc(es, index_name, doc_id, data_path):
