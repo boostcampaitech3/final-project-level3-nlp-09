@@ -187,7 +187,28 @@ def run_mrc(
     predictions = trainer.predict(
         test_dataset=eval_dataset, test_examples=datasets["validation"]
     )
-    return predictions[0]["prediction_text"]
+    return predictions[0]["prediction_text"][0]
+
+def run_retriever_reader(
+    data_args: DataTrainingArguments,
+    training_args: TrainingArguments,
+    model_args: ModelArguments,
+    datasets: DatasetDict,
+    tokenizer,
+    model,
+    query,
+):
+    parser = HfArgumentParser((ModelArguments, DataTrainingArguments))
+    model_args, data_args = parser.parse_args_into_dataclasses()
+    retriever = ElasticRetrieval(data_args.index_name)
+    my_dict = {"question": [query], "id": ["answer"]}
+    datasets = DatasetDict()
+    datasets["validation"] = Dataset.from_dict(my_dict)
+    retrieved_dfs = retriever.retrieve_split(datasets["validation"], topk = data_args.top_k_retrieval)
+    results = []
+    for df in retrieved_dfs:
+        results.append((run_reader(None, None, None, None, tokenizer, model, df.iloc[0]["context"], df.iloc[0]["context_id"], query)))
+    return results
 
 def run_reader(
     data_args: DataTrainingArguments,
@@ -197,6 +218,7 @@ def run_reader(
     tokenizer,
     model,
     text,
+    text_id,
     query,
 ) -> NoReturn:
     parser = HfArgumentParser((ModelArguments, DataTrainingArguments))
@@ -217,7 +239,7 @@ def run_reader(
     df = pd.DataFrame({
         "question": query,
         "id": ["answer"],
-        "context_id": 0,
+        "context_id": 0 if text_id == None else text_id,
         "context": text,
     })
 
@@ -330,7 +352,7 @@ def run_reader(
     predictions = trainer.predict(
         test_dataset=eval_dataset, test_examples=datasets["validation"]
     )
-    return predictions[0]["prediction_text"]
+    return predictions[0]["prediction_text"][0], text ,text_id
 
 def run_sparse_retrieval(
     tokenize_fn: Callable[[str], List[str]],

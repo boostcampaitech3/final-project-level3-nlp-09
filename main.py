@@ -4,7 +4,7 @@ import streamlit_modal as modal
 
 import streamlit.components.v1 as components
 
-from model.inference import load_model, run_mrc, run_reader
+from model.inference import load_model, run_mrc, run_reader, run_retriever_reader
 
 model, tokenizer = load_model()
 sample_txt = '''
@@ -12,7 +12,6 @@ sample_txt = '''
 '''
 
 st.title("뭐든 내게 물어봐!(MNM)")
-st.image("https://t1.daumcdn.net/cfile/tistory/99D595365C348A850A")
 
 if "input" not in st.session_state:
     st.session_state["input"] = ""
@@ -22,14 +21,16 @@ if "uploaded_files" not in st.session_state:
     st.session_state["uploaded_files"] = []
 if "is_fixxed" not in st.session_state:
     st.session_state["is_fixxed"] = False
+if "result_text_and_ids" not in st.session_state:
+    st.session_state["result_text_and_ids"] = None
+if "result_context" not in st.session_state:
+    st.session_state["result_context"] = ""
 if "is_submitted" not in st.session_state:
     st.session_state["is_submitted"] = False
 else: 
     st.session_state["is_submitted"] = True
 def press_requery():
     st.session_state["is_fixxed"] = False if st.session_state["is_fixxed"] else True
-    print("고정됨" if st.session_state["is_fixxed"] else "풀림")
-
 
 # 회의록 입력
 with st.sidebar:
@@ -37,10 +38,8 @@ with st.sidebar:
     st.session_state['uploaded_files'] = st.file_uploader('정해진 형식의 회의록을 올려주세요!(json)',accept_multiple_files=True)
     minutes_list =[files.name.split(".")[0] for files in st.session_state['uploaded_files']]
     options = list(range(len(minutes_list)))
-    print(options, st.session_state['uploaded_files'])
     selected_minutes = st.selectbox(f'회의록 목록(개수: {len(minutes_list)}): ', options, 
                                     format_func = lambda x: minutes_list[x])
-    print(selected_minutes)
     submit_minute = st.button(label="회의록 보기", disabled=(False if st.session_state['uploaded_files'] else True)) 
     if submit_minute:
         st.text_area(minutes_list[selected_minutes], st.json(st.session_state['uploaded_files'][selected_minutes]))
@@ -51,10 +50,16 @@ if st.session_state["is_submitted"] and st.session_state["input"] != "":
     st.session_state.messages.append(msg)
     with st.spinner("두뇌 풀가동!"):
         if st.session_state["is_fixxed"]:
-            result = run_reader(None, None, None, None, tokenizer, model, sample_txt, msg[0])
+            best_answer = run_reader(None, None, None, None, tokenizer, model, st.session_state.result_context["내용"],
+            st.session_state.result_context["회의 제목"], msg[0])[0]['text']
+            st.session_state.result_text_and_ids = [{"찾은 답" : best_answer, "포함되어 있던 회의록": st.session_state.result_context["회의 제목"]}] 
         else:
-            result = run_mrc(None, None, None, None, tokenizer, model, msg[0])
-    msg = (result, False)
+            result = run_retriever_reader(None, None, None, None, tokenizer, model, msg[0])
+            result.sort(key=lambda x: x[0]["start_logit"] + x[0]["end_logit"], reverse=True)
+            st.session_state.result_text_and_ids = [{"찾은 답" : res[0]["text"], "포함되어 있던 회의록": res[2]} for res in result]
+            st.session_state.result_context = {"회의 제목": result[0][2], "내용": result[0][1]}
+            best_answer = st.session_state.result_text_and_ids[0]["찾은 답"]
+    msg = (str(best_answer), False)
     st.session_state.messages.append(msg)
 
 for i,msg in enumerate(st.session_state.messages):
@@ -63,14 +68,18 @@ for i,msg in enumerate(st.session_state.messages):
 if st.session_state["is_submitted"]:
     col = st.columns([1,1,2,3])
     with col[0]:
-        st.button(label="회의록 볼래?", on_click=modal.open)
+        open_minute_modal = st.button(label="회의록 볼래?", on_click=modal.open)
     with col[1]:
-        st.button(label="다른 답 볼래?", on_click=modal.open)
+        open_other_ans_modal = st.button(label="다른 답 볼래?", on_click=modal.open)
     with col[2]:
         if not st.session_state["is_fixxed"]:
             st.button(label="이번 회의록에서 다시 질문해볼래?", on_click=press_requery)
         else:
             st.button(label="지정한 회의록을 해제해볼래?", on_click=press_requery)
+
+if st.session_state.is_fixxed:
+    print(st.session_state['result_text_and_ids'])
+    st.write(f"회의록이 {st.session_state['result_text_and_ids'][0]['포함되어 있던 회의록']}으로 고정되어 있어!")
 
 with st.form(key="input_form", clear_on_submit=True):
     col1, col2 = st.columns([8, 1])
@@ -91,15 +100,14 @@ with st.form(key="input_form", clear_on_submit=True):
         st.write("&#9660;&#9660;&#9660;")
         st.session_state.is_submitted = st.form_submit_button(label="Ask")
 
-if modal.is_open():
+if modal.is_open() and open_other_ans_modal:
     with modal.container():
         st.write(
-            '''
-            [출결 주의사항]
-            1. QR코드 파일은 어떠한 형태로든 절대 다운받아서 소지/사용하지 말고 “게시된 QR코드"를 앱으로 ‘스캔'하여 [체크인], [체크아웃]을 각각 진행해주세요. (KDT 가이드에 따름)
-            2. 매일 체크인(10:00까지)과 체크아웃(19:00부터) 하루에 2번, QR 코드를 스캔해주세요. 스캔을 할 때에는 반드시 본인이 등록된 KDT 교육 회차에 맞는 QR 코드를 스캔해야 합니다~
-            3. QR 출결을 하여도 변함없이 [부스트코스 학습시작, 학습종료]를 같이 눌러주셔야 합니다.
-            4. 공결처리는 최소 3일전에 boostcamp_ai@connect.or.kr로 미리 운영진에게 말씀을 주시고, 갑자기 일이 생겨 조퇴나 결석이 필요할 경우 꼭 그 당일에 메일을 주셔야합니다. 그 이후에는 처리가 어렵습니다. 공결을 위한 문서는 +1일까지 보내주셔도 됩니다.
-            '''
+            st.session_state.result_text_and_ids
         )
-        
+
+if modal.is_open() and open_minute_modal:
+    with modal.container():
+        st.write(
+            st.session_state.result_context
+        )
