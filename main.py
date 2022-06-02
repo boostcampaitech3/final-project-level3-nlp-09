@@ -7,13 +7,6 @@ import streamlit_modal as modal
 from model.elastic_setting import *
 from model.inference import load_model, run_mrc
 
-"""
-TODO: 사용자 id, 업로드 파일이 변경되지 않아도 질문을 하면 값을 계속 새로 받아오는 문제
-    - 사용자 id, 회의록 업로드 "완료" 버튼을 만들어 -> "완료"가 클릭되면 값을 한 번에 받아온 후 -> 채팅 시작하도록
-TODO: 사용자가 중복되는 회의록 업로드 시 처리
-    - 회의록의 제목을 key값으로 받아 중복 제거
-TODO: 정답이 없는 경우 "empty"라고 반환하는거 수정
-"""
 
 model, tokenizer = load_model()
 
@@ -26,35 +19,26 @@ if "messages" not in st.session_state:
     st.session_state["messages"] = []
 if "uploaded_files" not in st.session_state:
     st.session_state["uploaded_files"] = []
-if "user" not in st.session_state:
-    st.session_state["user"] = ""
-if "user_ids" not in st.session_state:
-    st.session_state["user_ids"] = []
 
 def uploader_callback():
     print('Uploaded file')
 
 # 회의록 입력
 with st.sidebar:
+    st.title('프로젝트 ID를 입력해주세요!')
+    user = st.text_input("프로젝트 ID", placeholder="user_1", key="user", disabled=False)
     st.title('회의록을 입력해주세요!')
-    
-    user = st.text_input("프로젝트 ID", placeholder="홍길동", key="user", disabled=False)
-    st.session_state["user_ids"].append(st.session_state["user"])
-    # 유효한 user_id만 필터링
-    user_ids = list(set(st.session_state["user_ids"]))
-    user_ids = [id for id in user_ids if len(id) != 0]
 
-    st.session_state['uploaded_files'] = st.file_uploader('정해진 형식의 회의록을 올려주세요!(txt)', accept_multiple_files=True)    
+
+    st.session_state['uploaded_files'] = st.file_uploader('정해진 형식의 회의록을 올려주세요!(txt)',accept_multiple_files=True, disabled= (False if user else True)) 
     minutes_list =[files.name.split(".")[0] for files in st.session_state['uploaded_files']] # 모든 회의록 파일명
     options = list(range(len(minutes_list)))
     print("모든 회의록: {}".format(minutes_list))
 
-    duplicate_flag = False
-    if len(st.session_state['uploaded_files']) != len(list(set(st.session_state['uploaded_files']))):
-        st.session_state['uploaded_files'] = list(set(st.session_state['uploaded_files']))
-        duplicate_flag = True
-        print("중복된 회의록이 존재합니다!")
-
+    # if len(st.session_state['uploaded_files']) != len(list(set(st.session_state['uploaded_files']))):
+    #     print("중복된 회의록이 존재합니다!")
+    st.session_state['uploaded_files'] = list(set(st.session_state['uploaded_files']))  # 중복 파일 제거
+    
     selected_minutes = st.selectbox(f'회의록 목록(개수: {len(minutes_list)}): ', options, 
                                     format_func = lambda x: minutes_list[x])
     submit_minute = st.button(label="회의록 보기", disabled=(False if st.session_state['uploaded_files'] else True)) 
@@ -65,14 +49,14 @@ with st.sidebar:
     if submit_minute:
         modal.open()
 
-if modal.is_open() and not duplicate_flag:
+if modal.is_open():
     with modal.container():
         # st_json = json.dumps(st.session_state['uploaded_files'][selected_minutes].read().decode('utf-8')) # 파일 형식에 따라서 주기
         data = st.session_state['uploaded_files'][selected_minutes].read().decode('utf-8')
         print("Modal is open...")
             
         st.title(minutes_list[selected_minutes])
-        st.write(data)
+        st.text_area(label="", value=data, height=500, disabled=False)
 
 
 if user:
@@ -80,6 +64,7 @@ if user:
 
 setting_path = "./model/setting.json"
 
+# "질문 시작하기" 버튼이 눌리면 사용자 인덱스에 문서 삽입
 if start_chat:
     es, user_index = es_setting(index_name=user_index)
     if st.session_state["uploaded_files"] is not None:
