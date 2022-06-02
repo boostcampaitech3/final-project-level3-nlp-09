@@ -197,10 +197,11 @@ def run_retriever_reader(
     tokenizer,
     model,
     query,
+    user_index
 ):
     parser = HfArgumentParser((ModelArguments, DataTrainingArguments))
     model_args, data_args = parser.parse_args_into_dataclasses()
-    retriever = ElasticRetrieval(data_args.index_name)
+    retriever = ElasticRetrieval(user_index)
     my_dict = {"question": [query], "id": ["answer"]}
     datasets = DatasetDict()
     datasets["validation"] = Dataset.from_dict(my_dict)

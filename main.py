@@ -1,15 +1,17 @@
+import json
+from collections import defaultdict
 import streamlit as st
 from streamlit_chat import message
 import streamlit_modal as modal
+import traitlets
+
+from model.elastic_setting import *
 
 import streamlit.components.v1 as components
 
 from model.inference import load_model, run_mrc, run_reader, run_retriever_reader
 
 model, tokenizer = load_model()
-sample_txt = '''
-다음은 의사일정 제3항 본회의 휴회의 건을 상정합니다. 상임의원회 의정활동을 위하여 8월 27일부터 9월 3일까지 8일간 본회를 휴회 하고자 합니다. 의원여러분 이의 있으십니까? (『없습니다』하는 의원 있음) 이의가 없으므로 가결되었음을 선포합니다. 이상으로 제207회 완주군의회 임시회 제1차 본회의를 마치겠습니다. 다음 제2차 본회의는 9월 4일 오전 10시에 개의하겠습니다. 의원여러분 수고 많으셨습니다. 산회를 선포합니다.
-'''
 
 st.title("뭐든 내게 물어봐!(MNM)")
 
@@ -29,20 +31,78 @@ if "is_submitted" not in st.session_state:
     st.session_state["is_submitted"] = False
 else: 
     st.session_state["is_submitted"] = True
+
+def uploader_callback():
+    print('Uploaded file')
+
 def press_requery():
     st.session_state["is_fixxed"] = False if st.session_state["is_fixxed"] else True
 
 # 회의록 입력
 with st.sidebar:
+    st.title('프로젝트 ID를 입력해주세요!')
+    user = st.text_input("프로젝트 ID", placeholder="user_1", key="user", disabled=False)
     st.title('회의록을 입력해주세요!')
-    st.session_state['uploaded_files'] = st.file_uploader('정해진 형식의 회의록을 올려주세요!(json)',accept_multiple_files=True)
-    minutes_list =[files.name.split(".")[0] for files in st.session_state['uploaded_files']]
+
+
+    st.session_state['uploaded_files'] = st.file_uploader('정해진 형식의 회의록을 올려주세요!(txt)',accept_multiple_files=True, disabled= (False if user else True))
+    
+    # 중복 파일 제거
+    file_names = []
+    uploaded_files = []
+    for file in st.session_state['uploaded_files']:
+        if file.name not in file_names:
+            file_names.append(file.name)
+            uploaded_files.append(file)
+
+    print("filtering: {}".format(uploaded_files))
+    print(type(uploaded_files))
+
+
+
+    minutes_list =[files.name.split(".")[0] for files in uploaded_files] # 모든 회의록 파일명
     options = list(range(len(minutes_list)))
+    print("모든 회의록: {}".format(minutes_list)) 
+    
+    
     selected_minutes = st.selectbox(f'회의록 목록(개수: {len(minutes_list)}): ', options, 
                                     format_func = lambda x: minutes_list[x])
     submit_minute = st.button(label="회의록 보기", disabled=(False if st.session_state['uploaded_files'] else True)) 
+    start_chat = st.button(label="질문 시작하기", disabled=(False if st.session_state['uploaded_files'] else True)) 
+
+
     if submit_minute:
-        st.text_area(minutes_list[selected_minutes], st.json(st.session_state['uploaded_files'][selected_minutes]))
+        modal.open()
+
+if modal.is_open() and submit_minute:
+    with modal.container():
+        # st_json = json.dumps(st.session_state['uploaded_files'][selected_minutes].read().decode('utf-8')) # 파일 형식에 따라서 주기
+        data = st.session_state['uploaded_files'][selected_minutes].read().decode('utf-8')
+        print("Modal is open...")
+            
+        st.title(minutes_list[selected_minutes])
+        st.text_area(label="", value=data, height=500, disabled=False)
+
+
+if user:
+    user_index = user
+else:
+    st.warning("프로젝트 이름을 적어주세요")
+    st.stop()
+
+setting_path = "./model/setting.json"
+
+# "질문 시작하기" 버튼이 눌리면 사용자 인덱스에 문서 삽입
+if start_chat:
+    es, user_index = es_setting(index_name=user_index)
+    if st.session_state["uploaded_files"] is not None:
+        corpus = read_uploadedfile(uploaded_files)
+        # corpus, titles = read_uploadedfile(uploaded_files)
+        # print("titles:", titles)
+        print("corpus:", corpus)
+
+    user_setting(es, user_index, corpus, type="first", setting_path=setting_path)
+
 
 # 제출 시 모델 사용
 if st.session_state["is_submitted"] and st.session_state["input"] != "":
@@ -54,7 +114,7 @@ if st.session_state["is_submitted"] and st.session_state["input"] != "":
             st.session_state.result_context["회의 제목"], msg[0])[0]['text']
             st.session_state.result_text_and_ids = [{"찾은 답" : best_answer, "포함되어 있던 회의록": st.session_state.result_context["회의 제목"]}] 
         else:
-            result = run_retriever_reader(None, None, None, None, tokenizer, model, msg[0])
+            result = run_retriever_reader(None, None, None, None, tokenizer, model, msg[0], user_index)
             result.sort(key=lambda x: x[0]["start_logit"] + x[0]["end_logit"], reverse=True)
             st.session_state.result_text_and_ids = [{"찾은 답" : res[0]["text"], "포함되어 있던 회의록": res[2]} for res in result]
             st.session_state.result_context = {"회의 제목": result[0][2], "내용": result[0][1]}
@@ -65,7 +125,7 @@ if st.session_state["is_submitted"] and st.session_state["input"] != "":
 for i,msg in enumerate(st.session_state.messages):
     message(msg[0], is_user=msg[1], key = i)
 
-if st.session_state["is_submitted"]:
+if st.session_state["messages"]:
     col = st.columns([1,1,2,3])
     with col[0]:
         open_minute_modal = st.button(label="회의록 볼래?", on_click=modal.open)
@@ -78,7 +138,6 @@ if st.session_state["is_submitted"]:
             st.button(label="지정한 회의록을 해제해볼래?", on_click=press_requery)
 
 if st.session_state.is_fixxed:
-    print(st.session_state['result_text_and_ids'])
     st.write(f"회의록이 {st.session_state['result_text_and_ids'][0]['포함되어 있던 회의록']}으로 고정되어 있어!")
 
 with st.form(key="input_form", clear_on_submit=True):
