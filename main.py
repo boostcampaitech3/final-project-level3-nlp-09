@@ -71,20 +71,16 @@ with st.sidebar:
     
     selected_minutes = st.selectbox(f'회의록 목록(개수: {len(minutes_list)}): ', options, 
                                     format_func = lambda x: minutes_list[x])
-    submit_minute = st.button(label="회의록 보기", disabled=(False if st.session_state['uploaded_files'] else True)) 
+    submit_minute = st.button(label="회의록 보기",on_click=modal.open, disabled=(False if st.session_state['uploaded_files'] else True)) 
 
-
-#     if submit_minute:
-#         modal.open()
-
-# if modal.is_open():
-#     with modal.container():
-#         # st_json = json.dumps(st.session_state['uploaded_files'][selected_minutes].read().decode('utf-8')) # 파일 형식에 따라서 주기
-#         data = st.session_state['uploaded_files'][selected_minutes].read().decode('utf-8')
-#         print("Modal is open...")
+if modal.is_open() and submit_minute:
+    with modal.container():
+        # st_json = json.dumps(st.session_state['uploaded_files'][selected_minutes].read().decode('utf-8')) # 파일 형식에 따라서 주기
+        data = st.session_state['uploaded_files'][selected_minutes].read().decode('utf-8')
+        print("Modal is open...")
             
-#         st.title(minutes_list[selected_minutes])
-#         st.text_area(label="", value=data, height=500, disabled=False)
+        st.title(minutes_list[selected_minutes])
+        st.text_area(label="", value=data, height=500, disabled=False)
 
 
 if user:
@@ -104,10 +100,11 @@ if st.session_state["uploaded_files"] is not None:
 
 user_setting(es, user_index, corpus, type="first", setting_path=setting_path)
 
-time.sleep(3)
+
 
 # 제출 시 모델 사용
 if st.session_state["is_submitted"] and st.session_state["input"] != "":
+    time.sleep(1)
     msg = (st.session_state["input"], True)
     st.session_state.messages.append(msg)
     with st.spinner("두뇌 풀가동!"):
@@ -161,14 +158,14 @@ with st.form(key="input_form", clear_on_submit=True):
         st.write("&#9660;&#9660;&#9660;")
         st.session_state.is_submitted = st.form_submit_button(label="Ask")
 
-if modal.is_open() and open_other_ans_modal:
-    with modal.container():
-        st.write(
-            st.session_state.result_text_and_ids
-        )
-
-if modal.is_open() and open_minute_modal:
-    with modal.container():
-        st.write(
-            st.session_state.result_context
-        )
+if modal.is_open() and st.session_state["messages"]:
+    if open_other_ans_modal:
+        with modal.container():
+            st.write(
+                st.session_state.result_text_and_ids
+            )
+    elif open_minute_modal:
+        with modal.container():
+            st.write(
+                st.session_state.result_context
+            )
