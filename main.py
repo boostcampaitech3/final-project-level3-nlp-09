@@ -1,4 +1,5 @@
 import json
+import time
 from collections import defaultdict
 import streamlit as st
 from streamlit_chat import message
@@ -71,7 +72,6 @@ with st.sidebar:
     selected_minutes = st.selectbox(f'회의록 목록(개수: {len(minutes_list)}): ', options, 
                                     format_func = lambda x: minutes_list[x])
     submit_minute = st.button(label="회의록 보기", disabled=(False if st.session_state['uploaded_files'] else True)) 
-    start_chat = st.button(label="질문 시작하기", disabled=(False if st.session_state['uploaded_files'] else True)) 
 
 
 #     if submit_minute:
@@ -95,17 +95,16 @@ else:
 
 setting_path = "./model/setting.json"
 
-# "질문 시작하기" 버튼이 눌리면 사용자 인덱스에 문서 삽입
-if start_chat:
-    es, user_index = es_setting(index_name=user_index)
-    if st.session_state["uploaded_files"] is not None:
-        corpus = read_uploadedfile(uploaded_files)
-        # corpus, titles = read_uploadedfile(uploaded_files)
-        # print("titles:", titles)
-        print("corpus:", corpus)
+es, user_index = es_setting(index_name=user_index)
+if st.session_state["uploaded_files"] is not None:
+    corpus = read_uploadedfile(uploaded_files)
+    # corpus, titles = read_uploadedfile(uploaded_files)
+    # print("titles:", titles)
+    print("corpus:", corpus)
 
-    user_setting(es, user_index, corpus, type="first", setting_path=setting_path)
+user_setting(es, user_index, corpus, type="first", setting_path=setting_path)
 
+time.sleep(3)
 
 # 제출 시 모델 사용
 if st.session_state["is_submitted"] and st.session_state["input"] != "":
