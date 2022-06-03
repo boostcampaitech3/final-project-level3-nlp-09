@@ -451,7 +451,7 @@ class ElasticRetrieval:
             doc_scores, doc_indices, docs = self.get_relevant_doc_bulk(
                 query_or_dataset["question"], k=topk
             )
-        cqas = []
+        total = []
         for idx, example in enumerate(tqdm(query_or_dataset, desc="Sparse retrieval with Elasticsearch: ")):
             # retrieved_context 구하는 부분 수정
             retrieved_context = []
@@ -461,7 +461,7 @@ class ElasticRetrieval:
                 tmp = {
                     # Query와 해당 id를 반환합니다.
                     "question": example["question"],
-                    "id": example["id"],
+                    "id": doc_indices[i],
                     # Retrieve한 Passage의 id, context를 반환합니다.
                     "context_id": doc_indices[i],
                     "context": context
@@ -470,8 +470,9 @@ class ElasticRetrieval:
                     # validation 데이터를 사용하면 ground_truth context와 answer도 반환합니다.
                     tmp["original_context"] = example["context"]
                     tmp["answers"] = example["answers"]
-                cqas.append(pd.DataFrame([tmp]))
-        return cqas
+                total.append(tmp)
+            cqas = pd.DataFrame(total)
+            return cqas
 
     
     def get_relevant_doc(self, query: str, k: Optional[int] = 1) -> Tuple[List, List]:

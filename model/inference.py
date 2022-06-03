@@ -81,6 +81,9 @@ def run_mrc(
         data_args,
         es_index=es_index
     )
+    id_context_dict={}
+    for i in range(len(datasets["validation"]["id"])):
+        id_context_dict[datasets["validation"][i]["id"]] = datasets["validation"][i]["context"]
     column_names = datasets["validation"].column_names
     question_column_name = (
         "question" if "question" in column_names else column_names[0]
@@ -189,29 +192,8 @@ def run_mrc(
     predictions = trainer.predict(
         test_dataset=eval_dataset, test_examples=datasets["validation"]
     )
-    return predictions[0]["prediction_text"][0]
+    return [(pred["prediction_text"][0], id_context_dict[pred["id"]], pred["id"]) for pred in predictions]
 
-def run_retriever_reader(
-    data_args: DataTrainingArguments,
-    training_args: TrainingArguments,
-    model_args: ModelArguments,
-    datasets: DatasetDict,
-    tokenizer,
-    model,
-    query,
-    user_index
-):
-    parser = HfArgumentParser((ModelArguments, DataTrainingArguments))
-    model_args, data_args = parser.parse_args_into_dataclasses()
-    retriever = ElasticRetrieval(user_index)
-    my_dict = {"question": [query], "id": ["answer"]}
-    datasets = DatasetDict()
-    datasets["validation"] = Dataset.from_dict(my_dict)
-    retrieved_dfs = retriever.retrieve_split(datasets["validation"], topk = data_args.top_k_retrieval)
-    results = []
-    for df in retrieved_dfs:
-        results.append((run_reader(None, None, None, None, tokenizer, model, df.iloc[0]["context"], df.iloc[0]["context_id"], query)))
-    return results
 
 def run_reader(
     data_args: DataTrainingArguments,
@@ -385,7 +367,7 @@ def run_sparse_retrieval(
             datasets["validation"], topk=data_args.top_k_retrieval
         )
     else:
-        df = retriever.retrieve(
+        df = retriever.retrieve_split(
             datasets["validation"], topk=data_args.top_k_retrieval
         )
 

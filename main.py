@@ -10,7 +10,7 @@ from model.elastic_setting import *
 
 import streamlit.components.v1 as components
 
-from model.inference import load_model, run_mrc, run_reader, run_retriever_reader
+from model.inference import load_model, run_mrc, run_reader
 
 model, tokenizer = load_model()
 
@@ -41,6 +41,8 @@ def press_requery():
 
 def uploader_callback():
     print('Uploaded file')
+
+setting_path = "./model/setting.json"
 
 # 회의록 입력
 with st.sidebar:
@@ -83,15 +85,14 @@ if modal.is_open() and submit_minute:
         st.text_area(label="", value=data, height=500, disabled=False)
 
 
-if user:
+if user != "":
     user_index = user
 else:
     st.warning("프로젝트 이름을 적어주세요")
     st.stop()
 
-setting_path = "./model/setting.json"
+es, user_index = es_setting("user_index")
 
-es, user_index = es_setting(index_name=user_index)
 if st.session_state["uploaded_files"] is not None:
     corpus = read_uploadedfile(uploaded_files)
     # corpus, titles = read_uploadedfile(uploaded_files)
@@ -113,7 +114,8 @@ if st.session_state["is_submitted"] and st.session_state["input"] != "":
             st.session_state.result_context["회의 제목"], msg[0])[0]['text']
             st.session_state.result_text_and_ids = [{"찾은 답" : best_answer, "포함되어 있던 회의록": st.session_state.result_context["회의 제목"]}] 
         else:
-            result = run_retriever_reader(None, None, None, None, tokenizer, model, msg[0], user_index)
+            result = run_mrc(None, None, None, None, tokenizer, model, msg[0], user_index)
+            print(result)
             result.sort(key=lambda x: x[0]["start_logit"] + x[0]["end_logit"], reverse=True)
             st.session_state.result_text_and_ids = [{"찾은 답" : res[0]["text"], "포함되어 있던 회의록": res[2]} for res in result]
             st.session_state.result_context = {"회의 제목": result[0][2], "내용": result[0][1]}
