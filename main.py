@@ -47,7 +47,7 @@ setting_path = "./model/setting.json"
 # 회의록 입력
 with st.sidebar:
     st.title('프로젝트 ID를 입력해주세요!')
-    user = st.text_input("프로젝트 ID", placeholder="user_1", key="user", disabled=False)
+    user = st.text_input("프로젝트 ID", placeholder="input project name", key="user", disabled=False)
     st.title('회의록을 입력해주세요!')
 
 
@@ -94,12 +94,10 @@ else:
 es, user_index = es_setting("user_index")
 
 if st.session_state["uploaded_files"] is not None:
-    corpus = read_uploadedfile(uploaded_files)
-    # corpus, titles = read_uploadedfile(uploaded_files)
-    # print("titles:", titles)
-    print("corpus:", corpus)
+    corpus, titles = read_uploadedfile(uploaded_files)
 
-user_setting(es, user_index, corpus, type="first", setting_path=setting_path)
+
+user_setting(es, user_index, corpus, titles, type="first", setting_path=setting_path)
 
 
 
@@ -112,12 +110,12 @@ if st.session_state["is_submitted"] and st.session_state["input"] != "":
         if st.session_state["is_fixxed"]:
             best_answer = run_reader(None, None, None, None, tokenizer, model, st.session_state.result_context["내용"],
             st.session_state.result_context["회의 제목"], msg[0])[0]['text']
-            st.session_state.result_text_and_ids = [{"찾은 답" : best_answer, "포함되어 있던 회의록": st.session_state.result_context["회의 제목"]}] 
+            st.session_state.result_text_and_ids = [{ "포함되어 있던 회의록": st.session_state.result_context["회의 제목"], "찾은 답" : best_answer}] 
         else:
             result = run_mrc(None, None, None, None, tokenizer, model, msg[0], user_index)
             print(result)
             result.sort(key=lambda x: x[0]["start_logit"] + x[0]["end_logit"], reverse=True)
-            st.session_state.result_text_and_ids = [{"찾은 답" : res[0]["text"], "포함되어 있던 회의록": res[2]} for res in result]
+            st.session_state.result_text_and_ids = [{"포함되어 있던 회의록": res[2], "찾은 답" : res[0]["text"],} for res in result]
             st.session_state.result_context = {"회의 제목": result[0][2], "내용": result[0][1]}
             best_answer = st.session_state.result_text_and_ids[0]["찾은 답"]
     msg = (str(best_answer), False)
@@ -171,5 +169,5 @@ if modal.is_open() and st.session_state["messages"]:
         with modal.container():
             title = st.session_state.result_context["회의 제목"]
             context = st.session_state.result_context["내용"]
-            st.title(f"해당 회의록: {title}")
+            st.title(f"{title}")
             st.text_area(label="", value=context, height=500, disabled=False)
