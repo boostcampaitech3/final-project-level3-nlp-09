@@ -485,49 +485,35 @@ class ElasticRetrieval:
 if __name__ == "__main__":
 
     import argparse
-    from transformers import AutoTokenizer
+    from datasets import load_dataset
 
     parser = argparse.ArgumentParser(description="")
-    parser.add_argument(
-        "--dataset_name", metavar="./data/train_dataset", type=str, help=""
-    )
-    parser.add_argument(
-        "--model_name_or_path",
-        metavar="bert-base-multilingual-cased",
-        type=str,
-        help="",
-    )
-    parser.add_argument("--data_path", metavar="./data", type=str, help="")
-    parser.add_argument(
-        "--context_path", metavar="wikipedia_documents", type=str, help=""
-    )
-    parser.add_argument("--use_faiss", metavar=False, type=bool, help="")
+    parser.add_argument("--dataset_name", default="../data/train_dataset", type=str, help="")
+    parser.add_argument("--use_faiss", default=False, type=bool, help="")
+    parser.add_argument("--index_name", default="origin-meeting-wiki", type=str, help="테스트할 index name을 설정해주세요")
 
     args = parser.parse_args()
 
     # Test sparse
-    org_dataset = load_from_disk(args.dataset_name)
-    full_ds = concatenate_datasets(
-        [
-            org_dataset["train"].flatten_indices(),
-            org_dataset["validation"].flatten_indices(),
-        ]
-    )  # train dev 를 합친 4192 개 질문에 대해 모두 테스트
+    org_datasets = load_dataset('csv', data_files={'validation': '../data/test.csv'})
+    full_ds = org_datasets["validation"]
     print("*" * 40, "query dataset", "*" * 40)
-    print(full_ds)
+    print(org_datasets)
+
+    # 테스트 데이터 full_ds에도 동일하게 전처리
+    post_context = [preprocess(text) for text in full_ds["context"]]
+    post_question = [preprocess(text) for text in full_ds["question"]]
+
+    # 기존의 전처리 이전 컬럼 삭제
+    full_ds = full_ds.remove_columns("context")
+    full_ds = full_ds.remove_columns("question")
+
+    # 동일한 이름의 컬럼에 전처리 이후 데이터 추가
+    full_ds = full_ds.add_column("context", post_context)
+    full_ds = full_ds.add_column("question", post_question)
 
 
-    tokenizer = AutoTokenizer.from_pretrained(
-        args.model_name_or_path,
-        use_fast=False,
-    )
-
-    retriever = SparseRetrieval(
-        tokenize_fn=tokenizer.tokenize,
-        data_path=args.data_path,
-        context_path=args.context_path,
-    )
-
+    retriever = ElasticRetrieval(args.index_name)
     query = "대통령을 포함한 미국의 행정부 견제권을 갖는 국가 기관은?"
 
     if args.use_faiss:
@@ -541,19 +527,14 @@ if __name__ == "__main__":
             df = retriever.retrieve_faiss(full_ds)
             df["correct"] = df["original_context"] == df["context"]
 
-            print(
-                "correct retrieval result by faiss",
-                df["correct"].sum() / len(df),
-            )
+            print("correct retrieval result by faiss", df["correct"].sum() / len(df))
 
     else:
         with timer("bulk query by exhaustive search"):
-            df = retriever.retrieve(full_ds)
-            df["correct"] = df["original_context"] == df["context"]
+            df = retriever.retrieve(full_ds, topk=1)
+            df["correct"] = [original_context in context for original_context,context in zip(df["original_context"],df["context"])]
             print(
                 "correct retrieval result by exhaustive search",
+                f"{df['correct'].sum()}/{len(df)}",
                 df["correct"].sum() / len(df),
             )
-
-        with timer("single query by exhaustive search"):
-            scores, indices = retriever.retrieve(query)
