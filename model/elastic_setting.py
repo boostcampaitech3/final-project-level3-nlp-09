@@ -138,7 +138,7 @@ def insert_data(es, index_name, dataset_path, type="json", start_id=None):
     print(f"Succesfully loaded {n_records} into {index_name}")
     print("@@@@@@@ 데이터 삽입 완료 @@@@@@@")
 
-def insert_data_st(es, index_name, corpus, start_id=None):
+def insert_data_st(es, index_name, corpus, titles, start_id=None):
     """
     인덱스에 데이터 삽입
     """
@@ -147,7 +147,7 @@ def insert_data_st(es, index_name, corpus, start_id=None):
             if isinstance(start_id, int):
                 es.index(index=index_name, id=start_id+i, body=text)    
             else:
-                es.index(index=index_name, id=i, body=text)
+                es.index(index=index_name, id=titles[i], body=text)
         except:
             print(f"Unable to load document {i}.")
 
@@ -164,7 +164,7 @@ def read_uploadedfile(files):
     for file in files:
         title = file.name.split(".")[0]
         text = file.read().decode('utf-8')
-        texts.append(text)
+        texts.append(" "+ title+ " \n"+ text)
         print("파일 제목:", str(title))
         titles.append(title)
         
@@ -172,15 +172,12 @@ def read_uploadedfile(files):
     corpus = [
         {"document_text": texts[i]} for i in range(len(texts))
     ]
-    # corpus = [
-    #     {"document_text": texts[i]} for i in range(len(texts)),
-    #     {"document_title": titles[i]} for i in range(len(titles))
-    # ]
+
     print(len(corpus))
     print(len(titles))
 
-    # return corpus, titles
-    return corpus
+    return corpus, titles
+
 
 def update_doc(es, index_name, doc_id, data_path):
     f = open(data_path, "r")  # 수정할 텍스트
@@ -235,14 +232,14 @@ def search_all(es, index_name):
 
     return res
 
-def user_setting(es, index_name, corpus, type="first", setting_path = "./setting.json"):
+def user_setting(es, index_name, corpus, titles, type="first", setting_path = "./setting.json"):
     """
     streamlit 프로토타입에서 사용
     """
     if type == "first":
         # 첫 번째 사용하는 경우
         initial_index(es, index_name, setting_path=setting_path)
-        insert_data_st(es, index_name, corpus)
+        insert_data_st(es, index_name, corpus, titles)
         doc_num = count_doc(es, index_name=index_name)  # 기존에 존재하는 doc 개수가 출력됨
         print("첫 번째 사용하는 경우")
         print("doc 개수: ", doc_num)
