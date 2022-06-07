@@ -1,6 +1,5 @@
-import json
 import time
-from collections import defaultdict
+from requests import session
 import streamlit as st
 from streamlit_chat import message
 import streamlit_modal as modal
@@ -18,8 +17,12 @@ if "input" not in st.session_state:
     st.session_state["input"] = ""
 if "messages" not in st.session_state:
     st.session_state["messages"] = []
+if "doc_files" not in st.session_state:
+    st.session_state["doc_files"] = []
 if "uploaded_files" not in st.session_state:
     st.session_state["uploaded_files"] = []
+if "uploaded_files_names" not in st.session_state:
+    st.session_state["uploaded_files_names"] = []
 if "is_fixxed" not in st.session_state:
     st.session_state["is_fixxed"] = False
 if "result_text_and_ids" not in st.session_state:
@@ -30,35 +33,35 @@ if "is_submitted" not in st.session_state:
     st.session_state["is_submitted"] = False
 else: 
     st.session_state["is_submitted"] = True
-if "doc_files" not in st.session_state:
-    st.session_state["doc_files"] = []
 if "is_deleting" not in st.session_state:
     st.session_state["is_deleting"] = False
+if "faster_deleting" not in st.session_state:
+    st.session_state["faster_deleting"] = False
 if "is_changed" not in st.session_state:
     st.session_state["is_changed"] = False
+if "selected_minute" not in st.session_state:
+    st.session_state["selected_minute"] = ""
+if "is_inserting" not in st.session_state:
+    st.session_state["is_inserting"] = False
+if "faster_inserting" not in st.session_state:
+    st.session_state["faster_inserting"] = False
 
-def uploader_callback():
-    print('Uploaded file')
-
-def press_requery():
-    st.session_state["is_fixxed"] = False if st.session_state["is_fixxed"] else True
-    
-def delete_file(user_index, title):
-    if st.session_state["is_deleting"]:
-        # 회의록 삭제
-        print("회의록 삭제중")
-        deleted_doc = delete_doc(es, user_index, doc_id=str(title))
-        print("삭제한 회의록: {}".format(title))
-        st.session_state["doc_files"].remove(title)
-        print("삭제 후: ", st.session_state["doc_files"])
-        st.session_state["is_deleting"] = False
 
 def is_changed():
     st.session_state["is_changed"] = True if st.session_state["is_deleting"] else False
 
+def click_insert_button():
+    st.session_state["is_inserting"] = True if st.session_state["is_inserting"] else False
+
+def click_delete_button():
+    st.session_state["is_deleting"] = True if st.session_state["is_deleting"] else False
+
+def press_requery():
+    st.session_state["is_fixxed"] = False if st.session_state["is_fixxed"] else True
 
 # 사이드바 설정
 with st.sidebar:
+
     # 사용자 설정
     st.title('프로젝트 ID를 입력해주세요!')
     user = st.text_input("프로젝트 ID", placeholder="프로젝트 ID", key="user", disabled=False)
@@ -75,21 +78,20 @@ with st.sidebar:
     if existing_user:
         res = search_all(es, user_index)
         st.session_state["doc_files"] = [hit['_id'] for hit in res['hits']['hits']]
-        print("{} 사용자의 기존 문서: {}".format(user_index, st.session_state["doc_files"])) 
+        # print("{} 사용자의 기존 문서: {}".format(user_index, st.session_state["doc_files"])) 
     else:
         st.session_state["doc_files"] = []
 
-
+    
     # 회의록 설정
     st.title('회의록을 입력해주세요!')
-    st.session_state['uploaded_files'] = st.file_uploader('정해진 형식의 회의록을 올려주세요! (txt)', accept_multiple_files=True, disabled=(False if user else True))
-    
+    st.session_state['uploaded_files'] = st.file_uploader('정해진 형식의 회의록을 올려주세요! (txt)', accept_multiple_files=True, 
+                                                        on_change=click_insert_button,
+                                                        disabled=(False if not st.session_state["is_inserting"] and user else True))
 
     # 기존 파일 + 업로드 파일
-    # uploaded_files_names = [files.name.split(".")[0] for files in uploaded_files] # 모든 회의록 파일명
-    uploaded_files = [files.name.split(".")[0] for files in st.session_state['uploaded_files']] # 모든 회의록 파일명
-    st.session_state['doc_files'] += uploaded_files
-
+    st.session_state['uploaded_files_names'] = list(set([files.name.split(".")[0] for files in st.session_state['uploaded_files']])) # 중복 제거한 업로드한 파일명
+    st.session_state['doc_files'] += st.session_state['uploaded_files_names']  # 모든 회의록 파일명
 
     # 중복 파일 제거
     file_names = []
@@ -98,92 +100,84 @@ with st.sidebar:
         if file not in file_names:
             file_names.append(file)
             doc_files.append(file)
-    st.session_state['doc_files'] = doc_files
+    st.session_state['doc_files'] = doc_files  # 삽입할 문서 전체
 
+    options = list(range(len(st.session_state['doc_files'])))
     print("회의록 전체:", st.session_state['doc_files'])
-    print("uploaded_files:", uploaded_files)
-
-    minutes_list = [file for file in st.session_state['doc_files']] # 모든 회의록 파일명
-    options = list(range(len(minutes_list)))
-    print("모든 회의록: {}".format(minutes_list)) 
 
 
-    if st.session_state["uploaded_files"] is not None:
-        corpus, titles = read_uploadedfile(st.session_state["uploaded_files"])
+    # 회의록 업로드 버튼 1    
+    col = st.columns([1, 1])
+    with col[0]:
+        st.session_state["is_inserting"] = st.button(label="회의록 업로드", on_click=click_insert_button,
+                                                    disabled=(False if len(st.session_state['uploaded_files_names']) > 0 else True))
+    # 회의록 업로드
+    if st.session_state["is_inserting"]:
+        # 업로드한 파일 사용자 id에 삽입, insert_data_st()에서 중복 제거됨
+        if st.session_state['uploaded_files'] is not None:
+            corpus, titles = read_uploadedfile(st.session_state['uploaded_files'])
 
-    # 사용자 id에 회의록 삽입
-    setting_path = "./model/setting.json"
-    if existing_user:
-        insert_data_st(es, user_index, corpus, titles)
-    else:
-        initial_index(es, user_index, setting_path=setting_path)
-        insert_data_st(es, user_index, corpus, titles)
-    print("user setting done")
+        # 사용자 id에 회의록 삽입
+        setting_path = "./model/setting.json"
+        if existing_user:
+            insert_data_st(es, user_index, corpus, titles)
+        else:
+            initial_index(es, user_index, setting_path=setting_path)
+            insert_data_st(es, user_index, corpus, titles)
+        print("Complete uploading documents into user index")
 
+    # 회의록 업로드 버튼 2
+    with col[1]:
+        st.session_state["faster_inserting"] = st.button(label="빠르게 올라가랏!", on_click=click_insert_button,
+                                                disabled=False if st.session_state['is_inserting'] else True)
+    # 회의록 업로드 버튼 경고
+    if not st.session_state["is_inserting"] and st.session_state['uploaded_files_names']:
+        st.warning("회의록 업로드 버튼을 눌러주세요~")
+        st.stop()
+    if st.session_state['uploaded_files_names'] and st.session_state["is_inserting"]:
+        st.warning("빠르게 버튼을 눌러주세요~")
+        st.stop() 
     
     # 회의록 선택
-    # selected_minutes = st.selectbox(f'회의록 목록 ({len(minutes_list)} 개)', options, 
-                                    # format_func = lambda x: minutes_list[x])
-    selected_minutes = st.selectbox(f'회의록 목록 ({len(minutes_list)} 개)', options,
-                                    on_change = is_changed,
-                                    format_func = lambda x: [file for file in st.session_state['doc_files']][x])
-
+    docs_num = len(st.session_state['doc_files'])
+    st.session_state["selected_minute"] = st.selectbox(f'회의록 목록 ({docs_num} 개)', options,
+                                                        on_change = is_changed,
+                                                        format_func = lambda x: [file for file in st.session_state['doc_files']][x])
 
     # 선택한 회의록 제목, 내용 반환
-    # if st.session_state['doc_files'] and selected_minutes:
-    if st.session_state['doc_files']:
-        # print(len(st.session_state['doc_files']))
-        # print(len(minutes_list))
-        # print(len(st.session_state['uploaded_files']))
-
-        # print("doc_files: ", type(st.session_state['doc_files']))
-        # print("uploaded_files: ", type(st.session_state['uploaded_files']))
-
-        title = st.session_state['doc_files'][selected_minutes]
+    if existing_user and st.session_state['doc_files'] or st.session_state["is_inserting"] and st.session_state['doc_files']:
+        selected_minute = st.session_state["selected_minute"]
+        title = st.session_state['doc_files'][selected_minute]
         data = check_data(es, user_index, doc_id=title)
         print("선택한 회의록:", title)
-        # print("data in title:", data)
-
-    # print("변경된 회의록 목록:", [file for file in st.session_state['doc_files']])
 
 
     col = st.columns([1, 1, 1])
     with col[0]:
-        submit_minute = st.button(label="회의록 보기", on_click=modal.open, disabled=(False if user and len(minutes_list) > 0 else True))
+        submit_minute = st.button(label="회의록 보기", on_click=modal.open, disabled=(False if user and docs_num > 0 else True))
     with col[1]:
-        # delete_minute = st.button(label="회의록 삭제", on_click=delete_file(user_index, title), disabled=(False if user and len(minutes_list) > 0 else True))
-        st.session_state["is_deleting"] = st.button(label="회의록 삭제", on_click=delete_file(user_index, title), disabled=(False if user and len(minutes_list) > 0 else True))
-        print("Is deleting", st.session_state["is_deleting"])
+        st.session_state["is_deleting"] = st.button(label="회의록 삭제", on_click=click_delete_button,
+                                                    disabled=(False if user and docs_num > 0 else True))
+        print("삭제 버튼 상태", st.session_state["is_deleting"])
     with col[2]:
-        fix_minute = st.button(label="회의록 고정", on_click=modal.open, disabled=(False if user and len(minutes_list) > 0 else True)) 
-    # submit_minute = st.button(label="회의록 보기", on_click=modal.open, disabled=(False if st.session_state['uploaded_files'] else True)) 
+        st.session_state['faster_deleting'] = st.button(label="빠르게 삭제", on_click=click_delete_button,
+                                                        disabled=(False if st.session_state["is_deleting"] else True))
+    # 회의록 삭제 버튼 경고
+    if st.session_state["is_deleting"] and not st.session_state['faster_deleting']:
+        st.warning("빠르게 버튼을 눌러주세요~")
 
+    if st.session_state["is_deleting"]:
+        # 회의록 삭제
+        deleted_doc = delete_doc(es, user_index, doc_id=str(title))
+        print("삭제한 회의록: {}".format(title))
+        st.session_state["doc_files"].remove(title)
+        st.session_state["is_deleting"] = False 
 
 
 if modal.is_open() and submit_minute:
     with modal.container():
-        # st_json = json.dumps(st.session_state['uploaded_files'][selected_minutes].read().decode('utf-8')) # 파일 형식에 따라서 주기
-        # data = st.session_state['uploaded_files'][selected_minutes].read().decode('utf-8')
-            
-        st.title(minutes_list[selected_minutes])
+        st.title(st.session_state['doc_files'][selected_minute])
         st.text_area(label="", value=data, height=500, disabled=False)
-
-
-
-# if modal.is_open() and delete_minute:
-#     # 회의록 삭제
-#     print("회의록 삭제중")
-#     deleted_doc = delete_doc(es, user_index, doc_id=str(title))
-#     print("삭제한 회의록: {}".format(title))
-#     minutes_list.remove(title)
-#     st.session_state["doc_files"].remove(title)
-
-#     print("삭제 후: ", minutes_list)
-#     print("삭제 후: ", st.session_state["doc_files"])
-
-if modal.is_open() and fix_minute:
-    # 회의록 고정
-    print("회의록 고정중")
 
 
 

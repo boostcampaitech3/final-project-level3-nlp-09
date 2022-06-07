@@ -141,6 +141,7 @@ def insert_data(es, index_name, dataset_path, type="json", start_id=None):
 def insert_data_st(es, index_name, corpus, titles, start_id=None):
     """
     인덱스에 데이터 삽입
+    titles에 중복이 있어도 제거됨
     """
     for i, text in enumerate(tqdm(corpus)):
         try:
