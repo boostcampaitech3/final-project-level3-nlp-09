@@ -59,6 +59,7 @@ def click_delete_button():
 def press_requery():
     st.session_state["is_fixxed"] = False if st.session_state["is_fixxed"] else True
 
+
 # 사이드바 설정
 with st.sidebar:
 
@@ -205,19 +206,19 @@ for i,msg in enumerate(st.session_state.messages):
     message(msg[0], is_user=msg[1], key = i)
 
 if st.session_state["messages"]:
-    col = st.columns([1,1,2,3])
+    col = st.columns([1.5, 1.5, 2])
     with col[0]:
-        open_minute_modal = st.button(label="회의록 볼래?", on_click=modal.open)
+        open_minute_modal = st.button(label="본문 보기 📖", on_click=modal.open)
     with col[1]:
-        open_other_ans_modal = st.button(label="다른 답 볼래?", on_click=modal.open)
+        open_other_ans_modal = st.button(label="다른 답 보기 ⭐️", on_click=modal.open)
     with col[2]:
         if not st.session_state["is_fixxed"]:
-            st.button(label="이번 회의록에서 다시 질문해볼래?", on_click=press_requery)
+            st.button(label="여기서 더 질문하기 🔎", on_click=press_requery)
         else:
-            st.button(label="지정한 회의록을 해제해볼래?", on_click=press_requery)
+            st.button(label="새로운 회의록에서 질문하기 🧐", on_click=press_requery)
 
 if st.session_state.is_fixxed:
-    st.write(f"회의록이 {st.session_state['result_text_and_ids'][0]['포함되어 있던 회의록']}으로 고정되어 있어!")
+    st.write(f"{st.session_state['result_text_and_ids'][0]['포함되어 있던 회의록']} 에서 답을 찾는 중이야!")
 
 with st.form(key="input_form", clear_on_submit=True):
     col1, col2 = st.columns([8, 1])
