@@ -6,6 +6,7 @@ import streamlit.components.v1 as components
 
 from model.elastic_setting import *
 from model.inference import load_model, run_mrc, run_reader
+from collections import defaultdict
 
 model, tokenizer = load_model()
 
@@ -26,7 +27,7 @@ if "selected_minute" not in st.session_state:
 if "result_text_and_ids" not in st.session_state:
     st.session_state["result_text_and_ids"] = None
 if "result_context" not in st.session_state:
-    st.session_state["result_context"] = ""
+    st.session_state["result_context"] = defaultdict(str)
 if "is_deleting" not in st.session_state:
     st.session_state["is_deleting"] = False
 if "faster_deleting" not in st.session_state:
@@ -64,13 +65,19 @@ def click_insert_button():
     print("Complete uploading documents into user index")
     time.sleep(1)
 
-
 def click_delete_button():
     deleted_doc = delete_doc(es, user_index, doc_id=str(title))
     print("삭제한 회의록: {}".format(title))
     st.session_state["doc_files"].remove(title)
     st.session_state["is_deleting"] = False
     time.sleep(1)
+
+def click_fix_button():
+    st.session_state["is_fixxed"] = False if st.session_state["is_fixxed"] else True
+    title = st.session_state['doc_files'][st.session_state["selected_minute"]]
+    data = check_data(es, user_index, doc_id=title)
+    st.session_state.result_context["회의 제목"] = str(title)
+    st.session_state.result_context["내용"] = str(data)    
 
 def press_requery():
     st.session_state["is_fixxed"] = False if st.session_state["is_fixxed"] else True
@@ -80,13 +87,13 @@ def press_requery():
 with st.sidebar:
 
     # 사용자 설정
-    st.title('프로젝트 ID를 입력해주세요!')
-    user = st.text_input("프로젝트 ID", placeholder="프로젝트 ID", key="user", disabled=False)
+    st.title('프로젝트 이름을 입력해주세요!')
+    user = st.text_input("프로젝트 이름", placeholder="프로젝트 이름", key="user", disabled=False)
 
     if user != "":
         user_index = user
     else:
-        st.warning("프로젝트 ID를 입력해주세요!")
+        st.warning("프로젝트 이름을 입력해주세요!")
         st.stop()
 
     # 기존 사용자인 경우 저장된 문서 불러오기
@@ -148,10 +155,15 @@ with st.sidebar:
 
     col = st.columns([1, 1, 1])
     with col[0]:
-        submit_minute = st.button(label="회의록 보기", on_click=modal.open, disabled=(False if user and docs_num > 0 else True))
+        submit_minute = st.button(label="파일 보기", on_click=modal.open, disabled=(False if user and docs_num > 0 else True))
     with col[1]:
-        st.session_state["is_deleting"] = st.button(label="회의록 삭제", on_click=click_delete_button,
+        st.session_state["is_deleting"] = st.button(label="파일 삭제", on_click=click_delete_button,
                                                     disabled=(False if user and docs_num > 0 else True))
+    with col[2]:
+        if not st.session_state["is_fixxed"]:
+            st.button(label="파일 고정", on_click=click_fix_button, disabled=(False if user and docs_num > 0 else True))
+        else:
+            st.button(label="고정 해제", on_click=click_fix_button, disabled=(False if user and docs_num > 0 else True))
 
 if modal.is_open() and submit_minute:
     with modal.container():
@@ -199,12 +211,12 @@ if st.session_state["messages"]:
             st.button(label="새로운 회의록에서 질문하기 🧐", on_click=press_requery)
 
 if st.session_state.is_fixxed:
-    st.write(f"{st.session_state['result_text_and_ids'][0]['포함되어 있던 회의록']} 에서 답을 찾는 중이야!")
+    st.write(st.session_state.result_context["회의 제목"] + " 에서 답을 찾는 중이야!")
 
 with st.form(key="input_form", clear_on_submit=True):
     col1, col2, col3 = st.columns([8, 1, 1])
     with col1:
-        if len(st.session_state['uploaded_files']) != 0:
+        if len(st.session_state['doc_files']) != 0:
             st.text_input(
                 "궁금한 건 뭐든지 물어봐 (물론 회의록 내에서)",
                 placeholder="2015년 2차 본회의는 언제야?",
