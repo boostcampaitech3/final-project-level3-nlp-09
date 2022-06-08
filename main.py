@@ -54,10 +54,26 @@ def is_changed():
     st.session_state["is_changed"] = True if st.session_state["is_deleting"] else False
 
 def click_insert_button():
-    st.session_state["is_inserting"] = True if st.session_state["is_inserting"] else False
+    # 업로드한 파일 사용자 id에 삽입, insert_data_st()에서 중복 제거됨
+    if st.session_state['uploaded_files'] is not None:
+        corpus, titles = read_uploadedfile(st.session_state['uploaded_files'])
+
+    # 사용자 id에 회의록 삽입
+    setting_path = "./model/setting.json"
+    if existing_user:
+        insert_data_st(es, user_index, corpus, titles)
+    else:
+        initial_index(es, user_index, setting_path=setting_path)
+        insert_data_st(es, user_index, corpus, titles)
+    print("Complete uploading documents into user index")
+
 
 def click_delete_button():
-    st.session_state["is_deleting"] = True if st.session_state["is_deleting"] else False
+    deleted_doc = delete_doc(es, user_index, doc_id=str(title))
+    print("삭제한 회의록: {}".format(title))
+    st.session_state["doc_files"].remove(title)
+    st.session_state["is_deleting"] = False
+    time.sleep(1)
 
 def press_requery():
     st.session_state["is_fixxed"] = False if st.session_state["is_fixxed"] else True
@@ -82,7 +98,7 @@ with st.sidebar:
     if existing_user:
         res = search_all(es, user_index)
         st.session_state["doc_files"] = [hit['_id'] for hit in res['hits']['hits']]
-        # print("{} 사용자의 기존 문서: {}".format(user_index, st.session_state["doc_files"])) 
+        print("사용자의 기존 문서: {}".format(st.session_state["doc_files"])) 
     else:
         st.session_state["doc_files"] = []
 
@@ -104,6 +120,7 @@ with st.sidebar:
         if file not in file_names:
             file_names.append(file)
             doc_files.append(file)
+    
     st.session_state['doc_files'] = doc_files  # 삽입할 문서 전체
 
     options = list(range(len(st.session_state['doc_files'])))
@@ -115,33 +132,11 @@ with st.sidebar:
     with col[0]:
         st.session_state["is_inserting"] = st.button(label="회의록 업로드", on_click=click_insert_button,
                                                     disabled=(False if len(st.session_state['uploaded_files_names']) > 0 else True))
-    # 회의록 업로드
-    if st.session_state["is_inserting"]:
-        # 업로드한 파일 사용자 id에 삽입, insert_data_st()에서 중복 제거됨
-        if st.session_state['uploaded_files'] is not None:
-            corpus, titles = read_uploadedfile(st.session_state['uploaded_files'])
-
-        # 사용자 id에 회의록 삽입
-        setting_path = "./model/setting.json"
-        if existing_user:
-            insert_data_st(es, user_index, corpus, titles)
-        else:
-            initial_index(es, user_index, setting_path=setting_path)
-            insert_data_st(es, user_index, corpus, titles)
-        print("Complete uploading documents into user index")
-
-    # 회의록 업로드 버튼 2
-    with col[1]:
-        st.session_state["faster_inserting"] = st.button(label="빠르게 올라가랏!", on_click=click_insert_button,
-                                                disabled=False if st.session_state['is_inserting'] else True)
     # 회의록 업로드 버튼 경고
     if not st.session_state["is_inserting"] and st.session_state['uploaded_files_names']:
         st.warning("회의록 업로드 버튼을 눌러주세요~")
         st.stop()
-    if st.session_state['uploaded_files_names'] and st.session_state["is_inserting"]:
-        st.warning("빠르게 버튼을 눌러주세요~")
-        st.stop() 
-    
+
     # 회의록 선택
     docs_num = len(st.session_state['doc_files'])
     st.session_state["selected_minute"] = st.selectbox(f'회의록 목록 ({docs_num} 개)', options,
@@ -161,19 +156,6 @@ with st.sidebar:
         st.session_state["is_deleting"] = st.button(label="회의록 삭제", on_click=click_delete_button,
                                                     disabled=(False if user and docs_num > 0 else True))
         print("삭제 버튼 상태", st.session_state["is_deleting"])
-    with col[2]:
-        st.session_state['faster_deleting'] = st.button(label="빠르게 삭제", on_click=click_delete_button,
-                                                        disabled=(False if st.session_state["is_deleting"] else True))
-    # 회의록 삭제 버튼 경고
-    if st.session_state["is_deleting"] and not st.session_state['faster_deleting']:
-        st.warning("빠르게 버튼을 눌러주세요~")
-
-    if st.session_state["is_deleting"]:
-        # 회의록 삭제
-        deleted_doc = delete_doc(es, user_index, doc_id=str(title))
-        print("삭제한 회의록: {}".format(title))
-        st.session_state["doc_files"].remove(title)
-        st.session_state["is_deleting"] = False 
 
 if modal.is_open() and submit_minute:
     with modal.container():
