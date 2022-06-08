@@ -63,6 +63,7 @@ def run_mrc(
     tokenizer,
     model,
     query,
+    es_index = "origin-meeting-wiki"
 ) -> NoReturn:
     parser = HfArgumentParser((ModelArguments, DataTrainingArguments))
     model_args, data_args = parser.parse_args_into_dataclasses()
@@ -78,7 +79,11 @@ def run_mrc(
         datasets,
         None,
         data_args,
+        es_index=es_index
     )
+    id_context_dict={}
+    for i in range(len(datasets["validation"]["id"])):
+        id_context_dict[datasets["validation"][i]["id"]] = datasets["validation"][i]["context"]
     column_names = datasets["validation"].column_names
     question_column_name = (
         "question" if "question" in column_names else column_names[0]
@@ -187,14 +192,159 @@ def run_mrc(
     predictions = trainer.predict(
         test_dataset=eval_dataset, test_examples=datasets["validation"]
     )
-    return predictions[0]["prediction_text"]
+    return [(pred["prediction_text"][0], id_context_dict[pred["id"]], pred["id"]) for pred in predictions]
 
+
+def run_reader(
+    data_args: DataTrainingArguments,
+    training_args: TrainingArguments,
+    model_args: ModelArguments,
+    datasets: DatasetDict,
+    tokenizer,
+    model,
+    text,
+    text_id,
+    query,
+) -> NoReturn:
+    parser = HfArgumentParser((ModelArguments, DataTrainingArguments))
+    model_args, data_args = parser.parse_args_into_dataclasses()
+    if query != None:
+        my_dict = {"question": [query], "id": ["answer"]}
+    else:
+        pd_test = pd.read_csv("../data/test.csv")
+        my_dict = {"question":list(pd_test["question"]),"id":list(map(str,pd_test["id"]))}
+
+    f = Features(
+        {
+            "context": Value(dtype="string", id=None),
+            "id": Value(dtype="string", id=None),
+            "question": Value(dtype="string", id=None),
+        }
+    )
+    df = pd.DataFrame({
+        "question": query,
+        "id": ["answer"],
+        "context_id": 0 if text_id == None else text_id,
+        "context": text,
+    })
+
+    datasets = DatasetDict({"validation": Dataset.from_pandas(df, features=f)})
+    column_names = datasets["validation"].column_names
+    question_column_name = (
+        "question" if "question" in column_names else column_names[0]
+    )
+    context_column_name = (
+        "context" if "context" in column_names else column_names[1]
+    )
+    answer_column_name = (
+        "answers" if "answers" in column_names else column_names[2]
+    )
+
+    pad_on_right = tokenizer.padding_side == "right"
+
+    # Validation preprocessing
+    def prepare_validation_features(examples):
+        tokenized_examples = tokenizer(
+            examples[
+                question_column_name if pad_on_right else context_column_name
+            ],
+            examples[
+                context_column_name if pad_on_right else question_column_name
+            ],
+            truncation="only_second" if pad_on_right else "only_first",
+            max_length=384,
+            stride=data_args.doc_stride,
+            return_overflowing_tokens=True,
+            return_offsets_mapping=True,
+            return_token_type_ids=False, # roberta: False / bert:True
+            padding="max_length" if data_args.pad_to_max_length else False,
+        )
+
+        sample_mapping = tokenized_examples.pop("overflow_to_sample_mapping")
+
+        tokenized_examples["example_id"] = []
+
+        for i in range(len(tokenized_examples["input_ids"])):
+            # setting sequence id
+            sequence_ids = tokenized_examples.sequence_ids(i)
+            context_index = 1 if pad_on_right else 0
+
+            sample_index = sample_mapping[i]
+            tokenized_examples["example_id"].append(
+                examples["id"][sample_index]
+            )
+
+            # context의 일부가 아닌 offset_mapping을 None으로 설정하여 토큰 위치가 컨텍스트의 일부인지 여부를 쉽게 판별할 수 있습니다.
+            tokenized_examples["offset_mapping"][i] = [
+                (o if sequence_ids[k] == context_index else None)
+                for k, o in enumerate(tokenized_examples["offset_mapping"][i])
+            ]
+        return tokenized_examples
+
+    eval_dataset = datasets["validation"]
+
+    # Create Validation Feature
+    eval_dataset = eval_dataset.map(
+        prepare_validation_features,
+        batched=True,
+        num_proc=data_args.preprocessing_num_workers,
+        remove_columns=column_names,
+        load_from_cache_file=not data_args.overwrite_cache,
+    )
+
+    data_collator = DataCollatorWithPadding(tokenizer, pad_to_multiple_of=8)
+
+# Post-processing: start logits & end logits을 original context의 정답과 match
+    def post_processing_function(
+        examples,
+        features,
+        predictions: Tuple[np.ndarray, np.ndarray],
+        training_args: TrainingArguments,
+    ) -> EvalPrediction:
+        predictions = postprocess_qa_predictions(
+            examples=examples,
+            features=features,
+            predictions=predictions,
+            max_answer_length=data_args.max_answer_length,
+            output_dir=training_args.output_dir,
+        )
+
+        # Metric을 구할 수 있도록 Format 맞춤
+        formatted_predictions = [
+            {"id": k, "prediction_text": v} for k, v in predictions.items()
+        ]
+
+        return formatted_predictions
+
+    metric = load_metric("squad")
+
+    def compute_metrics(p: EvalPrediction) -> Dict:
+        return metric.compute(predictions=p.predictions, references=p.label_ids)
+
+    # Trainer init
+    trainer = QuestionAnsweringTrainer(
+        model=model,
+        args=training_args,
+        train_dataset=None,
+        eval_dataset=eval_dataset,
+        eval_examples=datasets["validation"],
+        tokenizer=tokenizer,
+        data_collator=data_collator,
+        post_process_function=post_processing_function,
+        compute_metrics=compute_metrics,
+    )
+
+    predictions = trainer.predict(
+        test_dataset=eval_dataset, test_examples=datasets["validation"]
+    )
+    return predictions[0]["prediction_text"][0], text ,text_id
 
 def run_sparse_retrieval(
     tokenize_fn: Callable[[str], List[str]],
     datasets: DatasetDict,
     training_args: TrainingArguments,
     data_args: DataTrainingArguments,
+    es_index: str,
     data_path: str = "../data/",
     context_path: str = "../data/wikipedia_documents.json",
 ) -> DatasetDict:
@@ -203,7 +353,7 @@ def run_sparse_retrieval(
     
     # Elasticsearch 사용하는 경우
     if data_args.elastic:
-        retriever = ElasticRetrieval(data_args.index_name)
+        retriever = ElasticRetrieval(es_index)
     else:
         retriever = SparseRetrieval(
             tokenize_fn=tokenize_fn, data_path=data_path, context_path=context_path
@@ -217,7 +367,7 @@ def run_sparse_retrieval(
             datasets["validation"], topk=data_args.top_k_retrieval
         )
     else:
-        df = retriever.retrieve(
+        df = retriever.retrieve_split(
             datasets["validation"], topk=data_args.top_k_retrieval
         )
 

@@ -56,7 +56,7 @@ def postprocess_qa_predictions(
     features,
     predictions: Tuple[np.ndarray, np.ndarray],
     version_2_with_negative: bool = False,
-    n_best_size: int = 20,
+    n_best_size: int = 1,
     max_answer_length: int = 30,
     null_score_diff_threshold: float = 0.0,
     output_dir: Optional[str] = None,
@@ -223,7 +223,7 @@ def postprocess_qa_predictions(
         ):
 
             predictions.insert(
-                0, {"text": "empty", "start_logit": 0.0, "end_logit": 0.0, "score": 0.0}
+                0, {"text": "여기서는 답을 못찾겠어..", "start_logit": 0.0, "end_logit": 0.0, "score": 0.0}
             )
 
         # 모든 점수의 소프트맥스를 계산합니다(we do it with numpy to stay independent from torch/tf in this file, using the LogSumExp trick).
@@ -307,7 +307,7 @@ def postprocess_qa_predictions(
                     json.dumps(scores_diff_json, indent=4, ensure_ascii=False) + "\n"
                 )
 
-    return all_predictions
+    return all_nbest_json
 
 
 def check_no_error(
