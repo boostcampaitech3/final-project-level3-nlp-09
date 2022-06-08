@@ -47,9 +47,6 @@ if "faster_inserting" not in st.session_state:
 def delete_message():
     st.session_state["messages"] = []
 
-def uploader_callback():
-    print('Uploaded file')
-
 def is_changed():
     st.session_state["is_changed"] = True if st.session_state["is_deleting"] else False
 
@@ -58,7 +55,6 @@ def click_insert_button():
     if st.session_state['uploaded_files'] is not None:
         corpus, titles = read_uploadedfile(st.session_state['uploaded_files'])
 
-    # 사용자 id에 회의록 삽입
     setting_path = "./model/setting.json"
     if existing_user:
         insert_data_st(es, user_index, corpus, titles)
@@ -66,6 +62,7 @@ def click_insert_button():
         initial_index(es, user_index, setting_path=setting_path)
         insert_data_st(es, user_index, corpus, titles)
     print("Complete uploading documents into user index")
+    time.sleep(1)
 
 
 def click_delete_button():
@@ -106,8 +103,8 @@ with st.sidebar:
     # 회의록 설정
     st.title('회의록을 입력해주세요!')
     st.session_state['uploaded_files'] = st.file_uploader('정해진 형식의 회의록을 올려주세요! (txt)', accept_multiple_files=True, 
-                                                        on_change=click_insert_button,
-                                                        disabled=(False if not st.session_state["is_inserting"] and user else True))
+                                                        disabled=(False if not st.session_state['uploaded_files'] and user else True))
+    # print("@@@@@ 업로드 직후 파일 @@@@@", st.session_state['doc_files'])
 
     # 기존 파일 + 업로드 파일
     st.session_state['uploaded_files_names'] = list(set([files.name.split(".")[0] for files in st.session_state['uploaded_files']])) # 중복 제거한 업로드한 파일명
@@ -124,10 +121,10 @@ with st.sidebar:
     st.session_state['doc_files'] = doc_files  # 삽입할 문서 전체
 
     options = list(range(len(st.session_state['doc_files'])))
-    print("회의록 전체:", st.session_state['doc_files'])
+    # print("@@@@@ 회의록 전체 @@@@@", st.session_state['doc_files'])
 
 
-    # 회의록 업로드 버튼 1    
+    # 회의록 업로드 버튼
     col = st.columns([1, 1])
     with col[0]:
         st.session_state["is_inserting"] = st.button(label="회의록 업로드", on_click=click_insert_button,
@@ -155,7 +152,6 @@ with st.sidebar:
     with col[1]:
         st.session_state["is_deleting"] = st.button(label="회의록 삭제", on_click=click_delete_button,
                                                     disabled=(False if user and docs_num > 0 else True))
-        print("삭제 버튼 상태", st.session_state["is_deleting"])
 
 if modal.is_open() and submit_minute:
     with modal.container():
