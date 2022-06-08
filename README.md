@@ -1,16 +1,124 @@
-# 회의록 Open-domain Question Answering
-> 네이버 부스트캠프 AI Tech 3기 최종 프로젝트
+# ❓"뭐든 내게 물어봐!"❓
+> 회의록을 활용한 Closed-Domain Question Answering(CDQA)
+
+---
+
+## Table of Contents
+1. [Introduction]()
+2. [Project Outline]()
+3. [Demo]()
+4. [Data]()
+5. [Model]()
+6. [How To Use]()
+7. [References]()
+
+---
+
+## 1. Introduction
+> 안녕하세요! 저희는 AI의 A부터 I까지 모든 것을 경험할 준비가 된 열정 가득한 사람들이 모인**MNM**팀 입니다! 
 
 
-## Members
-김태일|문찬국|이재학|하성진|한나연|
+### Team MNM
+
+> "**뭐**든 **내**게 **물**어봐!"
+
+### Members
+
+김태일_T3063|문찬국_T3076|이재학_T3161|하성진_T3230|한나연_T3250|
 :-:|:-:|:-:|:-:|:-:
-<img src='https://user-images.githubusercontent.com/46811558/162856318-13a478a3-ad96-4e1f-ad24-3e0a92b81eb7.jpg' height=100 width=100px></img>|<img src='https://user-images.githubusercontent.com/46811558/162856364-d71ea54c-31df-433f-8968-93ade6da30b5.jpg' height=100 width=100px></img>|<img src='https://user-images.githubusercontent.com/46811558/157460675-9ee90b62-7a39-4542-893d-00eafdb0fd95.jpg' height=100 width=100px></img>|<img src='https://user-images.githubusercontent.com/46811558/162856411-70847d72-1dbc-4389-b6e5-bcacba95b2ab.jpg' height=100 width=100px></img>|<img src='https://user-images.githubusercontent.com/46811558/162856463-e10110b7-7e68-4469-9418-6165108a3885.jpg' height=100 width=100px></img>
+<img src="assets/profile/ty.png" width='300px'></img>|<img src="assets/profile/cg.png" width='300px'></img>|<img src="assets/profile/jh.png" width='300px'></img>|<img src="assets/profile/sj.png" width='300px'></img>|<img src="assets/profile/ny.png" width='300px'></img>
 [detailTales](https://github.com/detailTales)|[nonegom](https://github.com/nonegom)|[wogkr810](https://github.com/wogkr810)|[maxha97](https://github.com/maxha97)|[HanNayeoniee](https://github.com/HanNayeoniee)
-gimty97@gmail.com|fksl9959@naver.com |jaehahk810@naver.com|maxha97@naver.com |nayeon2.han@gmail.com
+gimty97@gmail.com|fksl9959@naver.com |jaehahk810@naver.com|maxha97@naver.com |nayeon2.han@gmail.com  
+
+### Contribution
+
+| Member | Contribution | 
+| --- | --- |
+| 김태일 |  |
+| 문찬국 |  |
+| 이재학 |  |
+| 하성진 |  |
+| 한나연 |  |
+
+## 2. Proeject Outline
+
+> **프로젝트 주제** : 회의록을 활용한 Closed-Domain Question Answering(CDQA)
+
+> **문제 정의**: 클로바 노트 등을 활용해 회의록을 쉽게 기록할 수 있게 됐지만, `정보 검색이 어렵다는 문제 발견`
+
+> **개발 목표** : 사용자의 회의록 코퍼스에서 궁금한 질문을 주고 받을 수 있는 `회의록 QA` 모델 제작 
+
+### **프로젝트 전체 구조** 
+
+<img src="assets/img/structure.png" width='300px'>
+
+## 3. Demo
+
+### 🖥️ Web 예시(Streamlit)
+
+<img src="assets/img/streamlit.png" width='300px'>
+
+### 📱 App 예시(Telegram)
+
+<img src="assets/img/telegram.png" width='300px'>
+
+## 4. Data
+
+> **Dataset** : [데이콘 회의 녹취록 요약 경진대회](https://dacon.io/competitions/official/235813/overview/description)의 의회 데이터를 이용하여 **직접 구축**
+
+> **Annotation Tool** : [Haystack](https://annotate.deepset.ai/)을 이용하여 데이터셋 태깅
+
+> **Guideline** : [Guiddeline 문서](https://docs.google.com/document/d/113ta_VFzTiys3pfLDbOLUC-Ecr3Z9fH0/edit?rtpof=true)에 **FAQ** 작성 및 **질문 유형화**
+
+## 5. Model
+
+### Reader
+>🤗[RoBERTa-Large Finetuning Twice(KLUE MRC)](https://huggingface.co/Nonegom/roberta_finetune_twice)  
+>🤗[Finetuning Our Dataset](https://huggingface.co/wogkr810/mnm)
+
+<img src="assets/img/reader.png" width='300px'>
 
 
-## Commit Rule
+### Retriever
+
+<img src="assets/img/retriever.png" width='300px'>
+
+## 6. How To Use
+
+### Installation
+
+```
+# 파이썬 버전 확인 (3.8.5 확인)
+python3 --version 
+
+# venv 설치
+sudo apt-get install python3-venv 
+
+# 가상환경 생성하기
+python3 -m venv [venv_name] 
+
+# 가상환경 활성화(생성한 가상환경 폴더가 있는 경로에서 활성화 해야 함)
+source [venv_name]/bin/activate 
+
+# 라이브러리 설치
+pip install -r requirements.txt
+
+# 가상환경 종료
+deactivate
+```
+
+### Streamlit
+```
+```
+
+### Telegram
+```
+```
+
+## 7. References
+
+### Commit Rule
+
 ```
 - feat      : 새로운 기능 추가
 - debug     : 버그 수정
@@ -24,3 +132,18 @@ gimty97@gmail.com|fksl9959@naver.com |jaehahk810@naver.com|maxha97@naver.com |na
 - anno      : 주석 작업
 - etc       : 기타
 ```
+
+### Dataset
+ >[데이콘 회의 녹취록 요약 경진대회](https://dacon.io/competitions/official/235813/overview/description)
+- 라이센스 : ??
+
+### Paper : 
+> ~
+### Software
+>#### Reader : 
+-
+>#### Retriever : 
+- 
+> #### Frameworks : 
+- [Stremlit](https://github.com/streamlit/streamlit)
+- Telegram
