@@ -180,7 +180,7 @@ if modal.is_open() and submit_minute:
         <p>{data}</p>
         '''
         st.title(title)
-        st.components.v1.html(html_text, width=None, height=400, scrolling=True)
+        components.html(html_text, width=None, height=400, scrolling=True)
 
 
 # 질문 시작
@@ -203,8 +203,9 @@ if st.session_state["is_submitted"] and st.session_state["input"] != "":
     msg = (str(best_answer), False)
     st.session_state.messages.append(msg)
 
-for i,msg in enumerate(st.session_state.messages):
-    message(msg[0], is_user=msg[1], key = i)
+for i, msg in enumerate(st.session_state.messages):
+    logo_style = "croodles-neutral" if msg[1] else "bottts"
+    message(message=msg[0], is_user=msg[1], avatar_style=logo_style, seed=user_index, key = i)
 
 if st.session_state["messages"]:
     col = st.columns([1.5, 1.5, 2])
@@ -216,7 +217,7 @@ if st.session_state["messages"]:
         if not st.session_state["is_fixxed"]:
             st.button(label="여기서 더 질문하기 🔎", on_click=press_requery)
         else:
-            st.button(label="새로운 회의록에서 질문하기 🧐", on_click=press_requery)
+            st.button(label="새로운 회의록에서 질문하기 🔎", on_click=press_requery)
 
 if st.session_state.is_fixxed:
     st.write(st.session_state.result_context["회의 제목"] + " 에서 답을 찾는 중이야!")
@@ -253,7 +254,7 @@ if modal.is_open() and st.session_state["messages"]:
                 html_text += f"<h4>{i + 1} 순위 답변 </h4>"
                 for key, val in ans_dict.items():
                     html_text += f"<p>{key}: {val}</p>"
-            st.components.v1.html(html_text, width=None, height=400, scrolling=True)
+            components.html(html_text, width=None, height=400, scrolling=True)
     elif open_minute_modal:
         with modal.container():
             title = st.session_state.result_context["회의 제목"]
@@ -266,4 +267,4 @@ if modal.is_open() and st.session_state["messages"]:
             if best_answer not in context:
                 html_text = '<p style="color:red">여기서는 답을 찾지 못하였습니다</p>' + html_text
             st.title(f"{title}")
-            st.components.v1.html(html_text, width=None, height=400, scrolling=True)
+            components.html(html_text, width=None, height=400, scrolling=True)
