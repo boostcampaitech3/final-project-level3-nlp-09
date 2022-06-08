@@ -48,13 +48,13 @@ def delete_doc(es, index_name, doc_id):
     """
     문서 id로 인덱스에서 문서 삭제 후 삭제한 문서 반환
     """
+    deleted_doc = es.get(index=index_name, id=doc_id)
+
     if es.exists(index=index_name, id=doc_id):
         es.delete(index=index_name, id=doc_id)
         print("Deleting id {} from index {} ...".format(doc_id, index_name))
     else:
         print("Id {} does not existin index {}.".format(doc_id, index_name))
-
-    deleted_doc = es.get(index=index_name, id=doc_id)
 
     return deleted_doc['_source']['document_text']
 
@@ -141,6 +141,7 @@ def insert_data(es, index_name, dataset_path, type="json", start_id=None):
 def insert_data_st(es, index_name, corpus, titles, start_id=None):
     """
     인덱스에 데이터 삽입
+    titles에 중복이 있어도 제거됨
     """
     for i, text in enumerate(tqdm(corpus)):
         try:
@@ -154,7 +155,6 @@ def insert_data_st(es, index_name, corpus, titles, start_id=None):
     n_records = count_doc(es, index_name=index_name)
     print(f"Succesfully loaded {n_records} into {index_name}")
 
-# FIXME: 회의록 본문에 제목 추가하기
 def read_uploadedfile(files):
     """
     사용자가 업로드한 파일 읽어서 elasticsearch 입력 형태에 맞춰 반환
@@ -164,20 +164,14 @@ def read_uploadedfile(files):
     for file in files:
         title = file.name.split(".")[0]
         text = file.read().decode('utf-8')
-        texts.append(" "+ title+ " \n"+ text)
-        print("파일 제목:", str(title))
+        texts.append(title + " " + preprocess(text))
         titles.append(title)
-        
-    texts = [preprocess(text) for text in texts]
+    
     corpus = [
         {"document_text": texts[i]} for i in range(len(texts))
     ]
 
-    print(len(corpus))
-    print(len(titles))
-
     return corpus, titles
-
 
 def update_doc(es, index_name, doc_id, data_path):
     f = open(data_path, "r")  # 수정할 텍스트
@@ -199,9 +193,9 @@ def check_data(es, index_name, doc_id=0):
     """
     삽입한 데이터 확인
     """
-    print('샘플 데이터:')
     doc = es.get(index=index_name, id=doc_id)
-    pprint.pprint(doc)
+
+    return doc['_source']['document_text']
 
 def es_search(es, index_name, question, topk):
     # question = "대통령을 포함한 미국의 행정부 견제권을 갖는 국가 기관은?"
@@ -232,6 +226,12 @@ def search_all(es, index_name):
 
     return res
 
+def check_index(es, user_index):
+    indices=sorted(es.indices.get_alias().keys())
+    flag = True if user_index in indices else False
+
+    return flag, indices
+
 def user_setting(es, index_name, corpus, titles, type="first", setting_path = "./setting.json"):
     """
     streamlit 프로토타입에서 사용
@@ -247,7 +247,7 @@ def user_setting(es, index_name, corpus, titles, type="first", setting_path = ".
     elif type == "second":
         # 두 번째 사용하는 경우
         doc_num = count_doc(es, index_name)  # 또 여기서는 잘 작동함
-        insert_data_st(es, index_name, corpus, start_id=doc_num)
+        insert_data_st(es, index_name, corpus, titles, start_id=doc_num)
         print("두 번째 사용하는 경우")
         print("doc 개수: ", doc_num)
 

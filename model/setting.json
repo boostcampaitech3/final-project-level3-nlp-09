@@ -3,7 +3,9 @@
         "analysis": {
             "filter": {
                 "my_shingle": {
-                    "type": "shingle"
+                    "type": "shingle",
+                    "min_shingle_size": 3,
+                    "max_shingle_size": 4
                 }
             },
             "analyzer": {
@@ -13,20 +15,28 @@
                     "decompound_mode": "mixed",
                     "filter": ["my_shingle"]
                 }
-            },
-            "similairty": {
+            }
+                
+        },
+
+        "index": {
+            "similarity": {
                 "my_similarity": {
-                    "type": "BM25"
-                }
+                    "type": "BM25",
+                    "b": 1,
+                    "k1": 5  
+                  }
             }
         }
     },
+    
 
     "mappings": {
         "properties": {
             "document_text": {
                 "type": "text",
-                "analyzer": "my_analyzer"
+                "analyzer": "my_analyzer",
+                "similarity": "my_similarity"
             }
         }
     }
