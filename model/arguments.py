@@ -12,7 +12,8 @@ class ModelArguments:
     """
 
     model_name_or_path: str = field(
-        default= "wogkr810/mnm", # "klue/roberta-large",
+        # default= "/opt/ml/input/final-project-level3-nlp-09/model/models/train_dataset/checkpoint-1000", # "klue/roberta-large",
+        default="wogkr810/mnm",
         metadata={
             "help": "Path to pretrained model or model identifier from huggingface.co/models"
         },

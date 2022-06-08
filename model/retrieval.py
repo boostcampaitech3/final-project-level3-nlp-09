@@ -28,7 +28,7 @@ class SparseRetrieval:
         self,
         tokenize_fn,
         data_path: Optional[str] = "/opt/ml/input/data",
-        context_path: Optional[str] = "/opt/ml/input/data/wikipedia_documents.json",
+        context_path: Optional[str] = "../data/total_meeting_collection.json",
     ) -> NoReturn:
 
         """
@@ -514,6 +514,7 @@ if __name__ == "__main__":
 
     import argparse
     from datasets import load_dataset
+    from transformers import AutoTokenizer
 
     parser = argparse.ArgumentParser(description="")
     parser.add_argument("--dataset_name", default="../data/train_dataset", type=str, help="")
@@ -540,6 +541,9 @@ if __name__ == "__main__":
     full_ds = full_ds.add_column("context", post_context)
     full_ds = full_ds.add_column("question", post_question)
 
+    # Elasticsearch 테스트
+    retriever = ElasticRetrieval(args.index_name)
+
 
     retriever = ElasticRetrieval(args.index_name)
     query = "대통령을 포함한 미국의 행정부 견제권을 갖는 국가 기관은?"
@@ -560,6 +564,7 @@ if __name__ == "__main__":
     else:
         with timer("bulk query by exhaustive search"):
             df = retriever.retrieve(full_ds, topk=1)
+            df = retriever.retrieve(full_ds, topk=6)
             df["correct"] = [original_context in context for original_context,context in zip(df["original_context"],df["context"])]
             print(
                 "correct retrieval result by exhaustive search",

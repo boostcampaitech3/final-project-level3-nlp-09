@@ -370,6 +370,7 @@ def run_sparse_retrieval(
         df = retriever.retrieve_split(
             datasets["validation"], topk=data_args.top_k_retrieval
         )
+    assert not df.empty, "해당 키워드가 포함된 회의록이 없어 검색해온 값이 없습니다.. 새로고침 하시고 다시 질문해 주시기 바랍니다"
 
     f = Features(
         {
