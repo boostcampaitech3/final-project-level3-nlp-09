@@ -16,16 +16,16 @@ Elasticsearch를 사용하기 전 처음에 한 번 실행시켜주세요!!!
 
 def es_setting(index_name="origin-meeting-wiki"):
     """
-    elasticsearch 서버 세팅 
+    elasticsearch 서버 작동중인지 확인
     """
     es = Elasticsearch('http://localhost:9200', timeout=30, max_retries=10, retry_on_timeout=True)
     print("Ping Elasticsearch :", es.ping())
-    print('Elastic search info:')
-    print(es.info())
+    # print('Elastic search info:')
+    # print(es.info())
 
     return es, index_name
 
-def create_index(es, index_name, setting_path):
+def create_index(es, index_name, setting_path = "./setting.json"):
     """
     인덱스 생성
     """
@@ -58,7 +58,7 @@ def delete_doc(es, index_name, doc_id):
 
     return deleted_doc['_source']['document_text']
 
-def initial_index(es, index_name, setting_path):
+def initial_index(es, index_name, setting_path = "./setting.json"):
     """
     처음에 인덱스를 초기화하고 생성하는 경우
     """
@@ -138,6 +138,47 @@ def insert_data(es, index_name, dataset_path, type="json", start_id=None):
     print(f"Succesfully loaded {n_records} into {index_name}")
     print("@@@@@@@ 데이터 삽입 완료 @@@@@@@")
 
+def insert_data_st(es, index_name, corpus, titles, start_id=None):
+    """
+    인덱스에 데이터 삽입
+    """
+    for i, text in enumerate(tqdm(corpus)):
+        try:
+            if isinstance(start_id, int):
+                es.index(index=index_name, id=start_id+i, body=text)    
+            else:
+                es.index(index=index_name, id=titles[i], body=text)
+        except:
+            print(f"Unable to load document {i}.")
+
+    n_records = count_doc(es, index_name=index_name)
+    print(f"Succesfully loaded {n_records} into {index_name}")
+
+# FIXME: 회의록 본문에 제목 추가하기
+def read_uploadedfile(files):
+    """
+    사용자가 업로드한 파일 읽어서 elasticsearch 입력 형태에 맞춰 반환
+    """
+    texts = []
+    titles = []
+    for file in files:
+        title = file.name.split(".")[0]
+        text = file.read().decode('utf-8')
+        texts.append(" "+ title+ " \n"+ text)
+        print("파일 제목:", str(title))
+        titles.append(title)
+        
+    texts = [preprocess(text) for text in texts]
+    corpus = [
+        {"document_text": texts[i]} for i in range(len(texts))
+    ]
+
+    print(len(corpus))
+    print(len(titles))
+
+    return corpus, titles
+
+
 def update_doc(es, index_name, doc_id, data_path):
     f = open(data_path, "r")  # 수정할 텍스트
     text = f.read()
@@ -145,13 +186,13 @@ def update_doc(es, index_name, doc_id, data_path):
     es.update(es, index=index_name, id=doc_id, doc=new_text)
     
     print(f"Succesfully updated doc {doc_id} in {index_name}")
-    print("@@@@@@@ 문서 수정 완료 @@@@@@@")
 
 def count_doc(es, index_name):
     """
     특정 인덱스의 문서 개수 세기
     """
     n_records = es.count(index=index_name)["count"]
+
     return n_records
 
 def check_data(es, index_name, doc_id=0):
@@ -188,17 +229,36 @@ def search_all(es, index_name):
     }
 
     res = es.search(index=index_name, body=query)
-    return res
-    
 
-def main1(args):
+    return res
+
+def user_setting(es, index_name, corpus, titles, type="first", setting_path = "./setting.json"):
     """
-    사용자가 처음 회의록을 삽입하는 경우
+    streamlit 프로토타입에서 사용
+    """
+    if type == "first":
+        # 첫 번째 사용하는 경우
+        initial_index(es, index_name, setting_path=setting_path)
+        insert_data_st(es, index_name, corpus, titles)
+        doc_num = count_doc(es, index_name=index_name)  # 기존에 존재하는 doc 개수가 출력됨
+        print("첫 번째 사용하는 경우")
+        print("doc 개수: ", doc_num)
+
+    elif type == "second":
+        # 두 번째 사용하는 경우
+        doc_num = count_doc(es, index_name)  # 또 여기서는 잘 작동함
+        insert_data_st(es, index_name, corpus, start_id=doc_num)
+        print("두 번째 사용하는 경우")
+        print("doc 개수: ", doc_num)
+
+
+def main(args):
+    """
+    모델 inference 에서 사용
     """
     es, index_name = es_setting(index_name=args.index_name)
     initial_index(es, index_name, args.setting_path)
     insert_data(es, index_name, args.dataset_path, type="json")
-
 
     query = "제154회 완주군의회 임시회 제2차 본회의에서 5분 발언을 한 사람은 누구야?"
     res = es_search(es, index_name, query, 10)
@@ -208,6 +268,7 @@ def main1(args):
     print('\n=========== RETRIEVE SCORES ==========\n')
     for hit in res['hits']['hits']:
         print("Doc ID: %3r  Score: %5.2f" % (hit['_id'], hit['_score']))
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="")
@@ -216,33 +277,4 @@ if __name__ == "__main__":
     parser.add_argument("--index_name", default="origin-meeting-wiki", type=str, help="테스트할 index name을 설정해주세요")
 
     args = parser.parse_args()
-    main1(args)
-    print("main1 완료")
-
-
-def main2(args):
-    """
-    미리 인덱스 생성 후, 사용자가 회의록을 추가 삽입하는 경우
-    """
-    es, index_name = es_setting(index_name=args.index_name)
-    doc_num = count_doc(es, index_name)
-    insert_data(es, index_name, args.dataset_path, type="txt", start_id=doc_num)
-    check_data(es, index_name, doc_id=1)
-
-    query = "제154회 완주군의회 임시회 제2차 본회의에서 5분 발언을 한 사람은 누구야?"
-    res = es_search(es, index_name, query, 10)
-    print("========== RETRIEVE RESULTS ==========")
-    pprint.pprint(res)
-
-    print('\n=========== RETRIEVE SCORES ==========\n')
-    for hit in res['hits']['hits']:
-        print("Doc ID: %3r  Score: %5.2f" % (hit['_id'], hit['_score']))
-
-# if __name__ == "__main__":
-#     parser = argparse.ArgumentParser(description="")
-#     parser.add_argument("--setting_path", default="./setting.json", type=str, help="생성할 index의 setting.json 경로를 설정해주세요")
-#     parser.add_argument("--dataset_path", default="../data/new_data/", type=str, help="삽입할 데이터의 경로를 설정해주세요")
-#     parser.add_argument("--index_name", default="sample2", type=str, help="테스트할 index name을 설정해주세요")
-
-#     args = parser.parse_args()
-#     main2(args)
+    main(args)
