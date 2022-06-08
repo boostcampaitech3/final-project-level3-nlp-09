@@ -1,6 +1,7 @@
 import json
 import time
 from collections import defaultdict
+from webbrowser import BackgroundBrowser
 import streamlit as st
 from streamlit_chat import message
 import streamlit_modal as modal
@@ -32,7 +33,8 @@ if "is_submitted" not in st.session_state:
     st.session_state["is_submitted"] = False
 else: 
     st.session_state["is_submitted"] = True
-
+def delete_message():
+    st.session_state["messages"] = []
 def uploader_callback():
     print('Uploaded file')
 
@@ -80,9 +82,12 @@ if modal.is_open() and submit_minute:
         # st_json = json.dumps(st.session_state['uploaded_files'][selected_minutes].read().decode('utf-8')) # 파일 형식에 따라서 주기
         data = st.session_state['uploaded_files'][selected_minutes].read().decode('utf-8')
         print("Modal is open...")
-            
+        html_text = f'''
+        <p>{data}</p>
+        '''
         st.title(minutes_list[selected_minutes])
-        st.text_area(label="", value=data, height=500, disabled=False)
+
+        st.components.v1.html(html_text, width=None, height=400, scrolling=True)
 
 
 if user != "":
@@ -140,7 +145,7 @@ if st.session_state.is_fixxed:
     st.write(f"회의록이 {st.session_state['result_text_and_ids'][0]['포함되어 있던 회의록']}으로 고정되어 있어!")
 
 with st.form(key="input_form", clear_on_submit=True):
-    col1, col2 = st.columns([8, 1])
+    col1, col2, col3 = st.columns([8, 1, 1])
     with col1:
         if len(st.session_state['uploaded_files']) != 0:
             st.text_input(
@@ -155,19 +160,33 @@ with st.form(key="input_form", clear_on_submit=True):
                 key="input", disabled=False
             )
     with col2:
-        st.write("&#9660;&#9660;&#9660;")
+        st.write("👨💬")
         st.session_state.is_submitted = st.form_submit_button(label="Ask")
+    with col3:
+        st.write("🧑🧹")
+        st.session_state.is_submitted = st.form_submit_button(label="clear", on_click = delete_message)
+
 
 if modal.is_open() and st.session_state["messages"]:
     if open_other_ans_modal:
         with modal.container():
             st.title("다른 회의록에서 찾은 답")
-            st.write(
-                st.session_state.result_text_and_ids
-            )
+            html_text = ""
+            for i, ans_dict in enumerate(st.session_state.result_text_and_ids):
+                html_text += f"<h4>{i + 1} 순위 답변 </h4>"
+                for key, val in ans_dict.items():
+                    html_text += f"<p>{key}: {val}</p>"
+            st.components.v1.html(html_text, width=None, height=400, scrolling=True)
     elif open_minute_modal:
         with modal.container():
             title = st.session_state.result_context["회의 제목"]
             context = st.session_state.result_context["내용"]
+            best_answer = st.session_state.result_text_and_ids[0]["찾은 답"]
+            
+            html_text = f'''
+                <p>{context.replace(f"{str(best_answer)}", f'<mark style="background-color : #ffff9e">{str(best_answer)}</mark>')}</p>
+                '''
+            if best_answer not in context:
+                html_text = '<p style="color:red">여기서는 답을 찾지 못하였습니다</p>' + html_text
             st.title(f"{title}")
-            st.text_area(label="", value=context, height=500, disabled=False)
+            st.components.v1.html(html_text, width=None, height=400, scrolling=True)
