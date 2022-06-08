@@ -5,6 +5,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, Callb
 import telepot.namedtuple as BT
 import telepot.namedtuple as MU
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+
 from model.inference import load_model, run_mrc, run_reader
 import time
 from model.elastic_setting import *
@@ -143,12 +144,12 @@ if __name__ == "__main__":
 
     # set elasticsearch for specific user
     # es, user_index = es_setting("origin-meeting-wiki")
+
     print('your chat id:',chat_id)
 
     # start message
     bot.sendMessage(chat_id = chat_id, text = '회의록과 관련된 무엇이든 물어보세요!🤓')
     bot.sendMessage(chat_id = chat_id, text = '회의록을 추가로 업로드하고 싶다면 첨부파일로 저한테 보내주세요!😉')
-
 
     # make handler
     updater = Updater(token)
