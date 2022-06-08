@@ -1,22 +1,10 @@
-from tkinter import Button
-from turtle import up
 import telegram
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler  
-import telepot.namedtuple as BT
-import telepot.namedtuple as MU
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-
 from model.inference import load_model, run_mrc, run_reader
 import time
 from model.elastic_setting import *
 
-# token = '5572204836:AAFC4bw49D8sUs6nS2uw8FhdFksCeHIE4kU'
-# my_bot = telegram.Bot(token)
-# global now_state
-# global es
-# global user_index
-# global text
-# global is_fixxed
 
 model, tokenizer = load_model()
 setting_path = "./model/setting.json"
@@ -32,6 +20,10 @@ button1 = InlineKeyboardButton(text = '본문 보여줘📖', callback_data='본
 button2 = InlineKeyboardButton(text = '다른 답 보여줘➡️', callback_data='다른 답 보기')
 button3 = InlineKeyboardButton(text = '여기서 더 질문🔎', callback_data='회의록 추가 질문하기')
 button4 = InlineKeyboardButton(text = '새로운 질문 할래🧑🏻‍💻', callback_data='새로운 질문하기')
+button5 = InlineKeyboardButton(text = '시작하기🔎', callback_data='시작하기')
+
+
+
 
 def query(update, context):
     global now_state
@@ -42,7 +34,13 @@ def query(update, context):
     global button2
     global button3
     global button4
+    global button5
     question = update.message.text
+    if question == '/start':
+        mu = InlineKeyboardMarkup(inline_keyboard = [[button5]])
+        update.message.reply_text(text = '시작하려면 아래 버튼을 눌러주세요', reply_markup=mu)
+        pass
+
     mu = InlineKeyboardMarkup(inline_keyboard = [[button1, button2, button3],[button4]])
     if is_fixxed:
         answer = run_reader(None, None, None, None, tokenizer, model, passage_set[now_state], doc_set[now_state],question)
@@ -60,7 +58,8 @@ def query(update, context):
                 doc_set[idx] = i[2]
                 passage_set[idx] = i[1]
         else: 
-            update.message.reply_text(text = '답이 존재하지 않아요 새로운 질문을 해주세요😭')
+            mu = InlineKeyboardMarkup(inline_keyboard = [[button1, button3, button4]])
+            update.message.reply_text(text = '답이 존재하지 않아요 새로운 질문을 해주세요😭', reply_markup=mu)
 
 
 
@@ -90,7 +89,8 @@ def callback_get(update, context):
                 mu = InlineKeyboardMarkup(inline_keyboard = [[button1, button2, button3],[button4]])
                 context.bot.sendMessage(chat_id=update.callback_query.message.chat_id, text = answer, reply_markup = mu)
             else: 
-                context.bot.sendMessage(chat_id=update.callback_query.message.chat_id, text = '답이 존재하지 않아요 새로운 질문을 해주세요😭')
+                mu = InlineKeyboardMarkup(inline_keyboard = [[button1, button2, button3],[button4]])
+                context.bot.sendMessage(chat_id=update.callback_query.message.chat_id, text = '답이 존재하지 않아요 새로운 질문을 해주세요😭', reply_markup = mu)
         elif now_state + 1 == 2:
             print('3번째 답')
             now_state += 1
@@ -101,7 +101,8 @@ def callback_get(update, context):
                 mu = InlineKeyboardMarkup(inline_keyboard = [[button1, button3, button4]])
                 context.bot.sendMessage(chat_id=update.callback_query.message.chat_id, text = answer, reply_markup = mu)
             else: 
-                context.bot.sendMessage(chat_id=update.callback_query.message.chat_id, text = '답이 존재하지 않아요 새로운 질문을 해주세요😭')
+                mu = InlineKeyboardMarkup(inline_keyboard = [[button1, button2, button3],[button4]])
+                context.bot.sendMessage(chat_id=update.callback_query.message.chat_id, text = '답이 존재하지 않아요 새로운 질문을 해주세요😭', reply_markup = mu)
     elif command == '회의록 추가 질문하기':
         context.bot.editMessageReplyMarkup(chat_id=update.callback_query.message.chat_id,  message_id=update.callback_query.message.message_id, reply_markup=None)
         context.bot.sendMessage(chat_id=update.callback_query.message.chat_id, text = f"넵 관련한 추가 질문해주세요!👀" )
@@ -109,6 +110,11 @@ def callback_get(update, context):
     elif command == '새로운 질문하기':
         context.bot.editMessageReplyMarkup(chat_id=update.callback_query.message.chat_id,  message_id=update.callback_query.message.message_id, reply_markup=None)
         context.bot.sendMessage(chat_id=update.callback_query.message.chat_id, text = '넵 궁금한걸 물어봐주세요😎')
+    elif command == '시작하기':
+        context.bot.editMessageReplyMarkup(chat_id=update.callback_query.message.chat_id,  message_id=update.callback_query.message.message_id, reply_markup=None)
+        context.bot.sendMessage(chat_id=update.callback_query.message.chat_id, text = f'회의록과 관련된 무엇이든 물어보세요!🤓')
+        context.bot.sendMessage(chat_id=update.callback_query.message.chat_id, text = '회의록을 추가로 업로드하고 싶다면 첨부파일로 저한테 보내주세요!😉')
+        print(update.callback_query.message.chat_id, '시작됨')
     
 
 
@@ -138,9 +144,10 @@ def download(update, context):
 
 if __name__ == "__main__":
     #settings for bot
-    token = '5572204836:AAFC4bw49D8sUs6nS2uw8FhdFksCeHIE4kU' # token for chatbot(don't revise it)
+    print('If you want to start, you need token for telegram chatbot')
+    token =  # insert token for chatbot
     bot = telegram.Bot(token) 
-    chat_id = 5402236099 # token for chat for specific user # you can insert your chat_id #bot.getUpdates()[-1].message.chat.id
+    # chat_id =  # token for chat for specific user # you can insert your chat_id #bot.getUpdates()[-1].message.chat.id
 
     # set elasticsearch for specific user
     # es, user_index = es_setting("origin-meeting-wiki")
@@ -148,8 +155,8 @@ if __name__ == "__main__":
     print('your chat id:',chat_id)
 
     # start message
-    bot.sendMessage(chat_id = chat_id, text = '회의록과 관련된 무엇이든 물어보세요!🤓')
-    bot.sendMessage(chat_id = chat_id, text = '회의록을 추가로 업로드하고 싶다면 첨부파일로 저한테 보내주세요!😉')
+    # bot.sendMessage(chat_id = chat_id, text = '회의록과 관련된 무엇이든 물어보세요!🤓')
+    # bot.sendMessage(chat_id = chat_id, text = '회의록을 추가로 업로드하고 싶다면 첨부파일로 저한테 보내주세요!😉')
 
     # make handler
     updater = Updater(token)
