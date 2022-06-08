@@ -85,6 +85,14 @@ def press_requery():
 
 # 사이드바 설정
 with st.sidebar:
+    st.markdown(
+        """
+        <style>
+        [data-testid="stSidebar"][aria-expanded="true"] > div:first-child {
+            width: 450px;
+        }
+        <style>        
+        """, unsafe_allow_html=True)
 
     # 사용자 설정
     st.title('프로젝트 이름을 입력해주세요!')
@@ -132,8 +140,8 @@ with st.sidebar:
 
 
     # 회의록 업로드 버튼
-    col = st.columns([1, 1])
-    with col[0]:
+    col = st.columns([2, 1])
+    with col[1]:
         st.session_state["is_inserting"] = st.button(label="회의록 업로드", on_click=click_insert_button,
                                                     disabled=(False if len(st.session_state['uploaded_files_names']) > 0 else True))
     # 회의록 업로드 버튼 경고
@@ -155,15 +163,15 @@ with st.sidebar:
 
     col = st.columns([1, 1, 1])
     with col[0]:
-        submit_minute = st.button(label="파일 보기", on_click=modal.open, disabled=(False if user and docs_num > 0 else True))
+        submit_minute = st.button(label="회의록 보기", on_click=modal.open, disabled=(False if user and docs_num > 0 else True))
     with col[1]:
-        st.session_state["is_deleting"] = st.button(label="파일 삭제", on_click=click_delete_button,
+        st.session_state["is_deleting"] = st.button(label="회의록 삭제", on_click=click_delete_button,
                                                     disabled=(False if user and docs_num > 0 else True))
     with col[2]:
         if not st.session_state["is_fixxed"]:
-            st.button(label="파일 고정", on_click=click_fix_button, disabled=(False if user and docs_num > 0 else True))
+            st.button(label="회의록 고정", on_click=click_fix_button, disabled=(False if user and docs_num > 0 else True))
         else:
-            st.button(label="고정 해제", on_click=click_fix_button, disabled=(False if user and docs_num > 0 else True))
+            st.button(label="회의록 해제", on_click=click_fix_button, disabled=(False if user and docs_num > 0 else True))
 
 if modal.is_open() and submit_minute:
     with modal.container():
