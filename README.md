@@ -23,12 +23,10 @@
 > "**뭐**든 **내**게 **물**어봐!"
 
 ### Members
-
-김태일_T3063|문찬국_T3076|이재학_T3161|하성진_T3230|한나연_T3250|
-:-:|:-:|:-:|:-:|:-:
-<img src="assets/profile/ty.png" width='300px'></img>|<img src="assets/profile/cg.png" width='300px'></img>|<img src="assets/profile/jh.png" width='300px'></img>|<img src="assets/profile/sj.png" width='300px'></img>|<img src="assets/profile/ny.png" width='300px'></img>
+|김태일|문찬국|이재학|하성진|한나연|
+|:-:|:-:|:-:|:-:|:-:|
 [detailTales](https://github.com/detailTales)|[nonegom](https://github.com/nonegom)|[wogkr810](https://github.com/wogkr810)|[maxha97](https://github.com/maxha97)|[HanNayeoniee](https://github.com/HanNayeoniee)
-gimty97@gmail.com|fksl9959@naver.com |jaehahk810@naver.com|maxha97@naver.com |nayeon2.han@gmail.com  
+|<a href="https://github.com/detailTales"><img src="assets/profile/ty.png" width='300px'></a>|<a href="https://github.com/nonegom"><img src="assets/profile/cg.png" width='300px'></a>|<a href="https://github.com/wogkr810"><img src="assets/profile/jh.png" width='300px'></a>|<a href="https://github.com/maxha97"><img src="assets/profile/sj.png" width='300px'></a>|<a href="https://github.com/HanNayeoniee"><img src="assets/profile/ny.png" width='300px'></a>|
 
 ### Contribution
 
@@ -68,7 +66,7 @@ gimty97@gmail.com|fksl9959@naver.com |jaehahk810@naver.com|maxha97@naver.com |na
 
 > **Annotation Tool** : [Haystack](https://annotate.deepset.ai/)을 이용하여 데이터셋 태깅
 
-> **Guideline** : [Guiddeline 문서](https://docs.google.com/document/d/113ta_VFzTiys3pfLDbOLUC-Ecr3Z9fH0/edit?rtpof=true)에 **FAQ** 작성 및 **질문 유형화**
+> **Guideline** : [Guideline 문서](https://docs.google.com/document/d/113ta_VFzTiys3pfLDbOLUC-Ecr3Z9fH0/edit?rtpof=true)에 **FAQ** 작성 및 **질문 유형화**
 
 ## 5. Model
 
@@ -86,6 +84,7 @@ gimty97@gmail.com|fksl9959@naver.com |jaehahk810@naver.com|maxha97@naver.com |na
 ## 6. How To Use
 
 ### Installation
+- [Elasticsearch 설치](https://github.com/boostcampaitech3/final-project-level3-nlp-09/model/README.md)를 먼저 진행해 주세요!
 
 ```
 # 파이썬 버전 확인 (3.8.5 확인)
@@ -109,6 +108,7 @@ deactivate
 
 ### Streamlit
 ```
+streamlit run main.py
 ```
 
 ### Telegram

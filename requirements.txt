@@ -1,9 +1,4 @@
-albumentations==1.1.0
-efficientnet-pytorch==0.7.1
-matplotlib==3.2.1
-opencv-python==4.5.1.48
 torch==1.10.0
-torchvision==0.11.1
 PyYAML==6.0
 datasets==2.2.2
 transformers==4.19.2
@@ -13,5 +8,4 @@ streamlit==1.9.0
 ray[tune]==1.12.1
 protobuf==3.20.1
 streamlit-modal==0.0.5
-click==8.0.4
-python-telegram-bot==13.12
+streamlit-chat==0.0.2.1
