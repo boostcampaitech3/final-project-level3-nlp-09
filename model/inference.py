@@ -81,6 +81,8 @@ def run_mrc(
         data_args,
         es_index=es_index
     )
+    if datasets is None:
+        return None
     id_context_dict={}
     for i in range(len(datasets["validation"]["id"])):
         id_context_dict[datasets["validation"][i]["id"]] = datasets["validation"][i]["context"]
@@ -370,7 +372,8 @@ def run_sparse_retrieval(
         df = retriever.retrieve_split(
             datasets["validation"], topk=data_args.top_k_retrieval
         )
-    assert not df.empty, "해당 키워드가 포함된 회의록이 없어 검색해온 값이 없습니다.. 새로고침 하시고 다시 질문해 주시기 바랍니다"
+    if df.empty:
+        return None
 
     f = Features(
         {
