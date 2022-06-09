@@ -59,7 +59,7 @@
 ### 📱 App 예시(Telegram)
 
 <img src="assets/img/telegram.png" width='300px'>
-<img src="https://user-images.githubusercontent.com/53209003/172896447-03dbf4bc-1109-47dd-9720-4521563e6ec7.mp4" width='300px'>
+<img src="https://user-images.githubusercontent.com/53209003/172897310-7e1c3142-f97f-4f79-a45a-a43efeca019c.gif" width='300px'>
 
 ## 4. Data
 
