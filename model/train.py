@@ -156,7 +156,7 @@ def run_mrc(
             answers = eval(examples[answer_column_name][sample_index])
 
             # if no answer append cls_index
-            if answers["text"] == '@':
+            if answers["text"] == ' ':
                 tokenized_examples["start_positions"].append(cls_index)
                 tokenized_examples["end_positions"].append(cls_index)
             else:
