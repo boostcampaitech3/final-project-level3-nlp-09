@@ -159,9 +159,9 @@ if modal.is_open() and submit_minute:
     with modal.container():
         print("Modal is open...")
         html_text = f'''
-        <p>{data}</p>
+        <p>{data.replace(f"{title}", f'<h3><div style="text-align:center">{title}</div></h3>')}</p>
         '''
-        st.title(title)
+        st.title("파일 보기")
         st.components.v1.html(html_text, width=None, height=400, scrolling=True)
 
 
@@ -195,12 +195,12 @@ for i,msg in enumerate(st.session_state.messages):
     message(msg[0], is_user=msg[1], key = i)
 
 if st.session_state["messages"]:
-    col = st.columns([1.5, 1.5, 2])
-    with col[0]:
-        open_minute_modal = st.button(label="본문 보기 📖", on_click=modal.open)
+    col = st.columns([1, 3, 3, 5])
     with col[1]:
-        open_other_ans_modal = st.button(label="다른 답 보기 ⭐️", on_click=modal.open)
+        open_minute_modal = st.button(label="본문 보기 📖", on_click=modal.open)
     with col[2]:
+        open_other_ans_modal = st.button(label="다른 답 보기 ⭐️", on_click=modal.open)
+    with col[3]:
         if not st.session_state["is_fixxed"]:
             st.button(label="여기서 더 질문하기 🔎", on_click=press_requery)
         else:
@@ -237,10 +237,13 @@ if modal.is_open() and st.session_state["messages"]:
         with modal.container():
             st.title("다른 회의록에서 찾은 답")
             html_text = ""
+            medals = ["🥇","🥈","🥉"]
             for i, ans_dict in enumerate(st.session_state.result_text_and_ids):
-                html_text += f"<h4>{i + 1} 순위 답변 </h4>"
+                html_text += f"<div style=\"text-align:center\"><h3>{medals[i]} {i + 1} 순위 답변 </h3></div>"
                 for key, val in ans_dict.items():
-                    html_text += f"<p>{key}: {val}</p>"
+                    html_text += f"<p>💡 {key}</p>"
+                    html_text += f"<pre>    - {val}</pre>"
+                html_text += "<hr>"
             st.components.v1.html(html_text, width=None, height=400, scrolling=True)
     elif open_minute_modal:
         with modal.container():
@@ -249,9 +252,10 @@ if modal.is_open() and st.session_state["messages"]:
             best_answer = st.session_state.result_text_and_ids[0]["찾은 답"]
             
             html_text = f'''
-                <p>{context.replace(f"{str(best_answer)}", f'<mark style="background-color : #ffff9e">{str(best_answer)}</mark>')}</p>
+                <p>{context.replace(f"{str(best_answer)}", f'<mark style="background-color : #ffff9e">{str(best_answer)}</mark>')
+                .replace(f"{title}", f'<h3><div style="text-align:center">{title}</div></h3>')}</p>
                 '''
             if best_answer not in context:
                 html_text = '<p style="color:red">여기서는 답을 찾지 못하였습니다</p>' + html_text
-            st.title(f"{title}")
+            st.title("본문 내용")
             st.components.v1.html(html_text, width=None, height=400, scrolling=True)
