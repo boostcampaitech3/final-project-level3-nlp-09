@@ -114,6 +114,8 @@ streamlit run main.py
 
 ### Telegram
 ```
+# 텔레그램 공식 챗봇 생성 절차를 진행하여 토큰을 부여 받아, 관련 정보를 코드에 추가후 실행  
+python telegram_chatbot.py
 ```
 
 ## 7. References
