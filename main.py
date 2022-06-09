@@ -2,7 +2,6 @@ import time
 import streamlit as st
 from streamlit_chat import message
 import streamlit_modal as modal
-import streamlit.components.v1 as components
 
 from model.elastic_setting import *
 from model.inference import load_model, run_mrc, run_reader
@@ -10,7 +9,6 @@ from model.inference import load_model, run_mrc, run_reader
 model, tokenizer = load_model()
 
 st.title("뭐든 내게 물어봐!(MNM)")
-
 if "input" not in st.session_state:
     st.session_state["input"] = ""
 if "messages" not in st.session_state:
@@ -106,7 +104,7 @@ with st.sidebar:
     # 회의록 설정
     st.title('회의록을 입력해주세요!')
     st.session_state['uploaded_files'] = st.file_uploader('정해진 형식의 회의록을 올려주세요! (txt)', accept_multiple_files=True, 
-                                                        on_change=click_insert_button,
+                                                        on_change = click_insert_button,
                                                         disabled=(False if not st.session_state["is_inserting"] and user else True))
 
     # 기존 파일 + 업로드 파일
@@ -180,12 +178,18 @@ if st.session_state["is_submitted"] and st.session_state["input"] != "":
         else:
             result = run_mrc(None, None, None, None, tokenizer, model, msg[0], user_index)
             print(result)
-            result.sort(key=lambda x: x[0]["start_logit"] + x[0]["end_logit"], reverse=True)
-            st.session_state.result_text_and_ids = [{"포함되어 있던 회의록": res[2], "찾은 답" : res[0]["text"],} for res in result]
-            st.session_state.result_context = {"회의 제목": result[0][2], "내용": result[0][1]}
-            best_answer = st.session_state.result_text_and_ids[0]["찾은 답"]
-    msg = (str(best_answer), False)
-    st.session_state.messages.append(msg)
+            if result is None:
+                st.warning(f"😅\"{msg[0]}\" 에 대한 키워드가 포함된 회의록이 없어 검색해온 값이 없습니다.. 오타가 없는 지 확인하고 다시 질문해 주시기 바랍니다")
+                best_answer = None
+                del st.session_state.messages[-1]
+            else:   
+                result.sort(key=lambda x: x[0]["start_logit"] + x[0]["end_logit"], reverse=True)
+                st.session_state.result_text_and_ids = [{"포함되어 있던 회의록": res[2], "찾은 답" : res[0]["text"],} for res in result]
+                st.session_state.result_context = {"회의 제목": result[0][2], "내용": result[0][1]}
+                best_answer = st.session_state.result_text_and_ids[0]["찾은 답"]
+    if best_answer:
+        msg = (str(best_answer), False)
+        st.session_state.messages.append(msg)
 
 for i,msg in enumerate(st.session_state.messages):
     message(msg[0], is_user=msg[1], key = i)
