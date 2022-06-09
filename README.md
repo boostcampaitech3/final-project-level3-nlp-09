@@ -84,7 +84,7 @@
 ## 6. How To Use
 
 ### Installation
-- [Elasticsearch 설치](https://github.com/boostcampaitech3/final-project-level3-nlp-09/model/README.md)를 먼저 진행해 주세요!
+- [Elasticsearch 설치](https://github.com/boostcampaitech3/final-project-level3-nlp-09/blob/develop/model/README.md)를 먼저 진행해 주세요!
 
 ```
 # 파이썬 버전 확인 (3.8.5 확인)
