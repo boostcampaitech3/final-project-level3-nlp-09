@@ -176,7 +176,7 @@ if modal.is_open() and submit_minute:
         html_text = f'''
         <p>{data.replace(f"{title}", f'<h3><div style="text-align:center">{title}</div></h3>')}</p>
         '''
-        st.title("파일 보기")
+        st.title("회의록 보기")
         st.components.v1.html(html_text, width=None, height=400, scrolling=True)
 
 
@@ -268,8 +268,10 @@ if modal.is_open() and st.session_state["messages"]:
             best_answer = st.session_state.result_text_and_ids[0]["찾은 답"]
             
             html_text = f'''
-                <p>{context.replace(f"{str(best_answer)}", f'<mark style="background-color : #ffff9e">{str(best_answer)}</mark>')
-                .replace(f"{title}", f'<h3><div style="text-align:center">{title}</div></h3>')}</p>
+                <p>{context
+                .replace(f"{title}", f'<h3><div style="text-align:center">{title}</div></h3>')
+                .replace(f"{str(best_answer)}", f'<mark style="background-color : #ffff9e">{str(best_answer)}</mark>')
+                }</p>
                 '''
             if best_answer not in context:
                 html_text = '<p style="color:red">여기서는 답을 찾지 못하였습니다</p>' + html_text

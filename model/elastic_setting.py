@@ -222,7 +222,7 @@ def search_all(es, index_name):
         }
     }
 
-    res = es.search(index=index_name, body=query)
+    res = es.search(index=index_name, body=query, size = es.count(index=index_name)["count"])
 
     return res
 
