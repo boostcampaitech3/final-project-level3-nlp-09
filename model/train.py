@@ -17,50 +17,51 @@ from transformers import (
     set_seed,
 )
 from utils_qa import check_no_error, postprocess_qa_predictions
+from ray.tune.integration.wandb import wandb_mixin
 
 logger = logging.getLogger(__name__)
 
-
+@wandb_mixin
 def main():
-    # 가능한 arguments 들은 ./arguments.py 나 transformer package 안의 src/transformers/training_args.py 에서 확인 가능합니다.
-    # --help flag 를 실행시켜서 확인할 수 도 있습니다.
-    project = "test-project"  # W&B Projects
-    entity_name = "level3-nlp-09"
-    display_name =  "test" # Model_name displayed in W&B Projects
-    wandb.init(project=project, entity=entity_name, name=display_name)
-
     parser = HfArgumentParser(
         (ModelArguments, DataTrainingArguments, TrainingArguments)
     )
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
-    print(model_args.model_name_or_path)
-
-    # [참고] argument를 manual하게 수정하고 싶은 경우에 아래와 같은 방식을 사용할 수 있습니다
-    # training_args.per_device_train_batch_size = 4
-    # print(training_args.per_device_train_batch_size)
-
+    #training_args.per_device_train_batch_size = 4
+    # WandB Init
+    project = "test-project-CG"  
+    entity_name = "level3-nlp-09"
+    display_name =  f"{model_args.model_name_or_path}"
+    wandb.init(project=project, entity=entity_name, name=display_name)
+    # if config in wandb change
+    config = wandb.config
+    if len(dict(config)) != 0:
+        training_args.learning_rate= config["learning_rate"]
+        training_args.num_train_epochs= config["num_train_epochs"]
+        training_args.per_device_train_batch_size= config["per_device_train_batch_size"]
+    else:
+        print("Not Use sweep")
+        pass
+    training_args.report_to = ['wandb']
     print(f"model is from {model_args.model_name_or_path}")
     print(f"data is from {data_args.dataset_name}")
 
-    # logging 설정
+    # logging setting
     logging.basicConfig(
         format="%(asctime)s - %(levelname)s - %(name)s -    %(message)s",
         datefmt="%m/%d/%Y %H:%M:%S",
         handlers=[logging.StreamHandler(sys.stdout)],
     )
 
-    # verbosity 설정 : Transformers logger의 정보로 사용합니다 (on main process only)
+    # verbosity & randomSeed
     logger.info("Training/evaluation parameters %s", training_args)
-
-    # 모델을 초기화하기 전에 난수를 고정합니다.
     set_seed(training_args.seed)
 
-    datasets = load_dataset('csv', data_files={'train':"/opt/ml/input/meeting_data/train.csv", 
-    'validation': '/opt/ml/input/meeting_data/validation.csv'})
+    datasets = load_dataset('csv', data_files={'train':"../data/train.csv", 
+                                                'validation': '../data/validation.csv'})
     print(datasets)
 
-    # AutoConfig를 이용하여 pretrained model 과 tokenizer를 불러옵니다.
-    # argument로 원하는 모델 이름을 설정하면 옵션을 바꿀 수 있습니다.
+    #  Load pretrained model and tokenizer
     config = AutoConfig.from_pretrained(
         model_args.config_name
         if model_args.config_name is not None
@@ -70,9 +71,8 @@ def main():
         model_args.tokenizer_name
         if model_args.tokenizer_name is not None
         else model_args.model_name_or_path,
-        # 'use_fast' argument를 True로 설정할 경우 rust로 구현된 tokenizer를 사용할 수 있습니다.
-        # False로 설정할 경우 python으로 구현된 tokenizer를 사용할 수 있으며,
-        # rust version이 비교적 속도가 빠릅니다.
+        # 'use_fast' = True: rust로 구현된 tokenizer를 사용
+        # False로 설정할 경우 python으로 구현된 tokenizer를 사용할 수 있으며, rust version이 비교적 속도가 빠릅니다.
         use_fast=True,
     )
     model = AutoModelForQuestionAnswering.from_pretrained(
@@ -89,10 +89,8 @@ def main():
         type(model),
     )
 
-    # do_train mrc model 혹은 do_eval mrc model
     if training_args.do_train or training_args.do_eval:
         run_mrc(data_args, training_args, model_args, datasets, tokenizer, model)
-
 
 def run_mrc(
     data_args: DataTrainingArguments,
@@ -103,8 +101,7 @@ def run_mrc(
     model,
 ) -> NoReturn:
 
-    # dataset을 전처리합니다.
-    # training과 evaluation에서 사용되는 전처리는 아주 조금 다른 형태를 가집니다.
+    # Dataset Preprocessing
     if training_args.do_train:
         column_names = datasets["train"].column_names
     else:
@@ -114,19 +111,16 @@ def run_mrc(
     context_column_name = "context" if "context" in column_names else column_names[1]
     answer_column_name = "answers" if "answers" in column_names else column_names[2]
 
-    # Padding에 대한 옵션을 설정합니다.
-    # (question|context) 혹은 (context|question)로 세팅 가능합니다.
+    # Padding Option: (Question|Context), (Context|Question)
     pad_on_right = tokenizer.padding_side == "right"
-
-    # 오류가 있는지 확인합니다.
+    # Check Error
     last_checkpoint, max_seq_length = check_no_error(
         data_args, training_args, datasets, tokenizer
     )
 
-    # Train preprocessing / 전처리를 진행합니다.
+    # Train Preprocessing
+    # truncation과 padding을 통해 toknization 진행, stride를 이용해 overflow를 유지하며 각 example들은 이전의 context와 조금씩 겹침
     def prepare_train_features(examples):
-        # truncation과 padding(length가 짧을때만)을 통해 toknization을 진행하며, stride를 이용하여 overflow를 유지합니다.
-        # 각 example들은 이전의 context와 조금씩 겹치게됩니다.
         tokenized_examples = tokenizer(
             examples[question_column_name if pad_on_right else context_column_name],
             examples[context_column_name if pad_on_right else question_column_name],
@@ -135,20 +129,19 @@ def run_mrc(
             stride=data_args.doc_stride,
             return_overflowing_tokens=True,
             return_offsets_mapping=True,
-            # return_token_type_ids=False, # roberta모델을 사용할 경우 False, bert를 사용할 경우 True로 표기해야합니다.
+            return_token_type_ids=False, # roberta: False / bert:True
             padding="max_length" if data_args.pad_to_max_length else False,
         )
 
         # 길이가 긴 context가 등장할 경우 truncate를 진행해야하므로, 해당 데이터셋을 찾을 수 있도록 mapping 가능한 값이 필요합니다.
+        # token의 캐릭터 단위 position를 찾을 수 있도록 offset mapping을 사용 start_positions과 end_positions을 찾는데 도움이 된다.
         sample_mapping = tokenized_examples.pop("overflow_to_sample_mapping")
-        # token의 캐릭터 단위 position를 찾을 수 있도록 offset mapping을 사용합니다.
-        # start_positions과 end_positions을 찾는데 도움을 줄 수 있습니다.
         offset_mapping = tokenized_examples.pop("offset_mapping")
         tokenized_examples = set_tokenized_examples_start_end_pos(tokenized_examples, sample_mapping, offset_mapping, examples)
         return tokenized_examples
 
     def set_tokenized_examples_start_end_pos(tokenized_examples, sample_mapping, offset_mapping, examples):
-        # 데이터셋에 "start position", "enc position" label을 부여합니다.
+        # "start position", "end position" label
         tokenized_examples["start_positions"] = []
         tokenized_examples["end_positions"] = []
 
@@ -156,33 +149,32 @@ def run_mrc(
             input_ids = tokenized_examples["input_ids"][i]
             cls_index = input_ids.index(tokenizer.cls_token_id)  # cls index
 
-            # sequence id를 설정합니다 (to know what is the context and what is the question).
+            # Setting sequence id
             sequence_ids = tokenized_examples.sequence_ids(i)
 
-            # 하나의 example이 여러개의 span을 가질 수 있습니다.
             sample_index = sample_mapping[i]
             answers = eval(examples[answer_column_name][sample_index])
 
-            # answer가 없을 경우 cls_index를 answer로 설정합니다(== example에서 정답이 없는 경우 존재할 수 있음).
-            if answers["text"] == '@':
+            # if no answer append cls_index
+            if answers["text"] == ' ':
                 tokenized_examples["start_positions"].append(cls_index)
                 tokenized_examples["end_positions"].append(cls_index)
             else:
-                # text에서 정답의 Start/end character index
+                # Start/end character index
                 start_char = answers["answer_start"]
                 end_char = start_char + len(answers["text"])
 
-                # text에서 current span의 Start token index
+                # Start token index
                 token_start_index = 0
                 while sequence_ids[token_start_index] != (1 if pad_on_right else 0):
                     token_start_index += 1
 
-                # text에서 current span의 End token index
+                # End token index
                 token_end_index = len(input_ids) - 1
                 while sequence_ids[token_end_index] != (1 if pad_on_right else 0):
                     token_end_index -= 1
 
-                # 정답이 span을 벗어났는지 확인합니다(정답이 없는 경우 CLS index로 label되어있음).
+                # span check
                 if not (
                     offsets[token_start_index][0] <= start_char
                     and offsets[token_end_index][1] >= end_char
@@ -190,8 +182,7 @@ def run_mrc(
                     tokenized_examples["start_positions"].append(cls_index)
                     tokenized_examples["end_positions"].append(cls_index)
                 else:
-                    # token_start_index 및 token_end_index를 answer의 끝으로 이동합니다.
-                    # Note: answer가 마지막 단어인 경우 last offset을 따라갈 수 있습니다(edge case).
+                    # token_start_index 및 token_end_index를 answer의 끝으로 이동합니다. Note) answer가 마지막 단어인 경우 last offset을 따라갈 수 있습니다(edge case). [?]
                     while (
                         token_start_index < len(offsets)
                         and offsets[token_start_index][0] <= start_char
@@ -209,7 +200,7 @@ def run_mrc(
             raise ValueError("--do_train requires a train dataset")
         train_dataset = datasets["train"]
 
-        # dataset에서 train feature를 생성합니다.
+        # Create train feature
         train_dataset = train_dataset.map(
             prepare_train_features,
             batched=True,
@@ -219,9 +210,8 @@ def run_mrc(
         )
 
     # Validation preprocessing
+    # truncation과 padding을 통해 toknization 진행, stride를 이용해 overflow를 유지하며 각 example들은 이전의 context와 조금씩 겹침
     def prepare_validation_features(examples):
-        # truncation과 padding(length가 짧을때만)을 통해 toknization을 진행하며, stride를 이용하여 overflow를 유지합니다.
-        # 각 example들은 이전의 context와 조금씩 겹치게됩니다.
         tokenized_examples = tokenizer(
             examples[question_column_name if pad_on_right else context_column_name],
             examples[context_column_name if pad_on_right else question_column_name],
@@ -230,11 +220,10 @@ def run_mrc(
             stride=data_args.doc_stride,
             return_overflowing_tokens=True,
             return_offsets_mapping=True,
-            # return_token_type_ids=False, # roberta모델을 사용할 경우 False, bert를 사용할 경우 True로 표기해야합니다.
+            return_token_type_ids=False, # roberta: False / bert:True
             padding="max_length" if data_args.pad_to_max_length else False,
         )
 
-        # 길이가 긴 context가 등장할 경우 truncate를 진행해야하므로, 해당 데이터셋을 찾을 수 있도록 mapping 가능한 값이 필요합니다.
         sample_mapping = tokenized_examples.pop("overflow_to_sample_mapping")
         offset_mapping = tokenized_examples["offset_mapping"]
         tokenized_examples = set_tokenized_examples_start_end_pos(tokenized_examples, sample_mapping, offset_mapping, examples)
@@ -243,15 +232,15 @@ def run_mrc(
         tokenized_examples["example_id"] = []
 
         for i in range(len(tokenized_examples["input_ids"])):
-            # sequence id를 설정합니다 (to know what is the context and what is the question).
+            # Setting sequence id
             sequence_ids = tokenized_examples.sequence_ids(i)
             context_index = 1 if pad_on_right else 0
 
-            # 하나의 example이 여러개의 span을 가질 수 있습니다.
+            # 하나의 example이 여러개의 span을 가질 수 있음
             sample_index = sample_mapping[i]
             tokenized_examples["example_id"].append(examples["id"][sample_index])
 
-            # Set to None the offset_mapping을 None으로 설정해서 token position이 context의 일부인지 쉽게 판별 할 수 있습니다.
+            # Set to None the offset_mapping을 None으로 설정해서 token position이 context의 일부인지 쉽게 판별
             tokenized_examples["offset_mapping"][i] = [
                 (o if sequence_ids[k] == context_index else None)
                 for k, o in enumerate(tokenized_examples["offset_mapping"][i])
@@ -261,7 +250,7 @@ def run_mrc(
     if training_args.do_eval:
         eval_dataset = datasets["validation"]
 
-        # Validation Feature 생성
+        # Create validation feature
         eval_dataset = eval_dataset.map(
             prepare_validation_features,
             batched=True,
@@ -271,15 +260,14 @@ def run_mrc(
         )
 
     # Data collator
-    # flag가 True이면 이미 max length로 padding된 상태입니다.
-    # 그렇지 않다면 data collator에서 padding을 진행해야합니다.
+    # flag가 True이면 이미 max length로 padding된 상태. 아니라면 data collator에서 padding을 진행 필요
     data_collator = DataCollatorWithPadding(
         tokenizer, pad_to_multiple_of=8 if training_args.fp16 else None
     )
 
-    # Post-processing:
+# Post-processing: start logits과 end logits을 original context의 정답과 match시킵니다.
     def post_processing_function(examples, features, predictions, training_args):
-        # Post-processing: start logits과 end logits을 original context의 정답과 match시킵니다.
+
         predictions = postprocess_qa_predictions(
             examples=examples,
             features=features,
@@ -287,7 +275,7 @@ def run_mrc(
             max_answer_length=data_args.max_answer_length,
             output_dir=training_args.output_dir,
         )
-        # Metric을 구할 수 있도록 Format을 맞춰줍니다.
+        # Metric을 구할 수 있도록 Format을 맞춰야 함
         formatted_predictions = [
             {"id": k, "prediction_text": v} for k, v in predictions.items()
         ]
@@ -310,11 +298,10 @@ def run_mrc(
             )
 
     metric = load_metric("squad")
-
     def compute_metrics(p: EvalPrediction):
         return metric.compute(predictions=p.predictions, references=p.label_ids)
 
-    # Trainer 초기화
+    # Trainer init
     trainer = QuestionAnsweringTrainer(
         model=model,
         args=training_args,
@@ -353,7 +340,7 @@ def run_mrc(
                 logger.info(f"  {key} = {value}")
                 writer.write(f"{key} = {value}\n")
 
-        # State 저장
+        # Save State
         trainer.state.save_to_json(
             os.path.join(training_args.output_dir, "trainer_state.json")
         )

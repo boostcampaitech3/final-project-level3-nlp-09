@@ -23,12 +23,19 @@
 > "**뭐**든 **내**게 **물**어봐!"
 
 ### Members
+<<<<<<< HEAD
+|김태일|문찬국|이재학|하성진|한나연|
+|:-:|:-:|:-:|:-:|:-:|
+[detailTales](https://github.com/detailTales)|[nonegom](https://github.com/nonegom)|[wogkr810](https://github.com/wogkr810)|[maxha97](https://github.com/maxha97)|[HanNayeoniee](https://github.com/HanNayeoniee)
+|<a href="https://github.com/detailTales"><img src="assets/profile/ty.png" width='300px'></a>|<a href="https://github.com/nonegom"><img src="assets/profile/cg.png" width='300px'></a>|<a href="https://github.com/wogkr810"><img src="assets/profile/jh.png" width='300px'></a>|<a href="https://github.com/maxha97"><img src="assets/profile/sj.png" width='300px'></a>|<a href="https://github.com/HanNayeoniee"><img src="assets/profile/ny.png" width='300px'></a>|
+=======
 
 김태일_T3063|문찬국_T3076|이재학_T3161|하성진_T3230|한나연_T3250|
 :-:|:-:|:-:|:-:|:-:
 <img src="assets/profile/ty.png" width='300px'></img>|<img src="assets/profile/cg.png" width='300px'></img>|<img src="assets/profile/jh.png" width='300px'></img>|<img src="assets/profile/sj.png" width='300px'></img>|<img src="assets/profile/ny.png" width='300px'></img>
 [detailTales](https://github.com/detailTales)|[nonegom](https://github.com/nonegom)|[wogkr810](https://github.com/wogkr810)|[maxha97](https://github.com/maxha97)|[HanNayeoniee](https://github.com/HanNayeoniee)
 gimty97@gmail.com|fksl9959@naver.com |jaehahk810@naver.com|maxha97@naver.com |nayeon2.han@gmail.com  
+>>>>>>> origin/main
 
 ### Contribution
 
@@ -61,6 +68,10 @@ gimty97@gmail.com|fksl9959@naver.com |jaehahk810@naver.com|maxha97@naver.com |na
 ### 📱 App 예시(Telegram)
 
 <img src="assets/img/telegram.png" width='300px'>
+<<<<<<< HEAD
+<img src="https://user-images.githubusercontent.com/53209003/172897310-7e1c3142-f97f-4f79-a45a-a43efeca019c.gif" width='300px'>
+=======
+>>>>>>> origin/main
 
 ## 4. Data
 
@@ -68,6 +79,16 @@ gimty97@gmail.com|fksl9959@naver.com |jaehahk810@naver.com|maxha97@naver.com |na
 
 > **Annotation Tool** : [Haystack](https://annotate.deepset.ai/)을 이용하여 데이터셋 태깅
 
+<<<<<<< HEAD
+> **Guideline** : [Guideline 문서](https://docs.google.com/document/d/113ta_VFzTiys3pfLDbOLUC-Ecr3Z9fH0/edit?rtpof=true)에 **FAQ** 작성 및 **질문 유형화**
+
+## 5. Model
+
+### Reader
+>🤗[RoBERTa-Large Finetuning Twice(KLUE MRC)](https://huggingface.co/Nonegom/roberta_finetune_twice)  
+>🤗[Finetuning Our Dataset](https://huggingface.co/wogkr810/mnm)
+
+=======
 > **Guideline** : [Guiddeline 문서](https://docs.google.com/document/d/113ta_VFzTiys3pfLDbOLUC-Ecr3Z9fH0/edit?rtpof=true)에 **FAQ** 작성 및 **질문 유형화**
 
 ## 5. Model
@@ -76,6 +97,7 @@ gimty97@gmail.com|fksl9959@naver.com |jaehahk810@naver.com|maxha97@naver.com |na
 >🤗[RoBERTa-Large Finetuning Twice(KLUE MRC)](https://huggingface.co/Nonegom/roberta_finetune_twice)  
 >🤗[Finetuning Our Dataset](https://huggingface.co/wogkr810/mnm)
 
+>>>>>>> origin/main
 <img src="assets/img/reader.png" width='300px'>
 
 
@@ -86,6 +108,10 @@ gimty97@gmail.com|fksl9959@naver.com |jaehahk810@naver.com|maxha97@naver.com |na
 ## 6. How To Use
 
 ### Installation
+<<<<<<< HEAD
+- [Elasticsearch 설치](https://github.com/boostcampaitech3/final-project-level3-nlp-09/blob/develop/model/README.md)를 먼저 진행해 주세요!
+=======
+>>>>>>> origin/main
 
 ```
 # 파이썬 버전 확인 (3.8.5 확인)
@@ -109,10 +135,19 @@ deactivate
 
 ### Streamlit
 ```
+<<<<<<< HEAD
+streamlit run main.py
+=======
+>>>>>>> origin/main
 ```
 
 ### Telegram
 ```
+<<<<<<< HEAD
+# 텔레그램 공식 챗봇 생성 절차를 진행하여 토큰을 부여 받아, 관련 정보를 코드에 추가 후 실행  
+python telegram_chatbot.py
+=======
+>>>>>>> origin/main
 ```
 
 ## 7. References
@@ -146,4 +181,8 @@ deactivate
 - 
 > #### Frameworks : 
 - [Stremlit](https://github.com/streamlit/streamlit)
+<<<<<<< HEAD
+- [Telegram](https://github.com/python-telegram-bot/python-telegram-bot)
+=======
 - Telegram
+>>>>>>> origin/main

@@ -181,8 +181,15 @@ test_record/
 EDA/
 runs/
 env/
+assets/
+tmp_trainer/
+data/
 #shell_script_files
 *.sh
+#csv_files
+*.csv
+#json_files
+*.json
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
