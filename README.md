@@ -135,7 +135,7 @@ deactivate
 
 ### Streamlit
 ```
-streamlit run main.py
+streamlit run main_streamlit.py
 ```
 
 ### Telegram
@@ -200,12 +200,12 @@ final-project-level3-nlp-09
 ```
 ### Dataset
  - [데이콘 회의 녹취록 요약 경진대회](https://dacon.io/competitions/official/235813/overview/description)
-    - 라이센스 : https://dacon.io/competitions/official/235813/overview/agreement
+    - [라이센스](https://dacon.io/competitions/official/235813/overview/agreement)
 
 ### Paper : 
 - [Fine-tuning Strategies for Domain Specific Question Answering under Low Annotation Budget Constraints](https://openreview.net/pdf?id=ks4BvF7kpiP)
-- [AEDA: An Easier Data Augmentation Technique for Text Classification](https://arxiv.org/abs/2108.13230)
 - [EDA: Easy Data Augmentation Techniques for Boosting Performance on Text Classification Tasks](https://arxiv.org/abs/1901.11196)
+- [AEDA: An Easier Data Augmentation Technique for Text Classification](https://arxiv.org/abs/2108.13230)
 
 #### Github : 
 - [Pororo](https://github.com/kakaobrain/pororo)
