@@ -24,7 +24,7 @@
 
 
 ## 1. Introduction
-> 안녕하세요! 저희는 AI의 A부터 I까지 모든 것을 경험할 준비가 된 열정 가득한 사람들이 모인**MNM**팀 입니다! 
+> 안녕하세요! 저희는 AI의 A부터 I까지 모든 것을 경험할 준비가 된 열정 가득한 사람들이 모인 **MNM**팀 입니다! 
 
 
 ### Team MNM
@@ -84,9 +84,9 @@
 
 > **Dataset** : [데이콘 회의 녹취록 요약 경진대회](https://dacon.io/competitions/official/235813/overview/description)의 의회 데이터를 이용하여 **직접 구축**
 
-> **Annotation Tool** : [Haystack](https://annotate.deepset.ai/)을 이용하여 데이터셋 태깅
+> **Annotation Tool** : [Haystack](https://annotate.deepset.ai/)을 이용하여 데이터 태깅
 
-> **Guideline** : [Guideline 문서](https://drive.google.com/file/d/1pWqdpWbXVxzCcAp7PEQPbqyDI7NJ-anw/view)에 **FAQ** 작성 및 **질문 유형화**
+> **[Guideline](https://drive.google.com/file/d/1pWqdpWbXVxzCcAp7PEQPbqyDI7NJ-anw/view)** : **FAQ** 작성 및 **질문 유형화**
 
 ---
 
@@ -94,7 +94,7 @@
 
 ### Reader
 >🤗[RoBERTa-Large Finetuning Twice(MRC) : Nonegom/roberta_finetune_twice](https://huggingface.co/Nonegom/roberta_finetune_twice)  
->🤗[Finetuning Our Dataset : wogkr810/mnm](https://huggingface.co/wogkr810/mnm)
+>🤗[Finetuning with Our Dataset : wogkr810/mnm](https://huggingface.co/wogkr810/mnm)
 
 <img src="assets/img/reader.png">
 
@@ -141,7 +141,7 @@ streamlit run main_streamlit.py
 ### Telegram
 ```
 # 텔레그램 공식 챗봇 생성 절차를 진행하여 토큰을 부여 받아, 관련 정보를 코드에 추가 후 실행  
-python telegram_chatbot.py
+python main_telegram.py
 ```
 
 ---
@@ -204,8 +204,8 @@ final-project-level3-nlp-09
 
 ### Paper : 
 - [Fine-tuning Strategies for Domain Specific Question Answering under Low Annotation Budget Constraints](https://openreview.net/pdf?id=ks4BvF7kpiP)
-- [EDA: Easy Data Augmentation Techniques for Boosting Performance on Text Classification Tasks](https://arxiv.org/abs/1901.11196)
-- [AEDA: An Easier Data Augmentation Technique for Text Classification](https://arxiv.org/abs/2108.13230)
+- [EDA : Easy Data Augmentation Techniques for Boosting Performance on Text Classification Tasks](https://arxiv.org/abs/1901.11196)
+- [AEDA : An Easier Data Augmentation Technique for Text Classification](https://arxiv.org/abs/2108.13230)
 
 #### Github : 
 - [Pororo](https://github.com/kakaobrain/pororo)
