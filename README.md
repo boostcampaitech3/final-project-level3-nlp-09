@@ -4,15 +4,24 @@
 ---
 
 ## Table of Contents
-1. [Introduction]()
-2. [Project Outline]()
-3. [Demo]()
-4. [Data]()
-5. [Model]()
-6. [How To Use]()
-7. [References]()
+0. [Archive](https://github.com/boostcampaitech3/final-project-level3-nlp-09#0-archive)
+1. [Introduction](https://github.com/boostcampaitech3/final-project-level3-nlp-09#1-introduction)
+2. [Project Outline](https://github.com/boostcampaitech3/final-project-level3-nlp-09#2-proeject-outline)
+3. [Demo](https://github.com/boostcampaitech3/final-project-level3-nlp-09#3-demo)
+4. [Data](https://github.com/boostcampaitech3/final-project-level3-nlp-09#4-data)
+5. [Model](https://github.com/boostcampaitech3/final-project-level3-nlp-09#5-model-1)
+6. [How To Use](https://github.com/boostcampaitech3/final-project-level3-nlp-09#6-how-to-use)
+7. [References](https://github.com/boostcampaitech3/final-project-level3-nlp-09#7-references)
+
 
 ---
+## 0. Archive
+><a href="https://www.youtube.com/watch?v=LoT7wuRPSHc"><img src="https://img.shields.io/badge/Presentation(Video)-000000?style=flat-square&logo=youtube&logoColor=fc2403"/></a>  
+<a href="https://drive.google.com/file/d/1ty1J-O7aqwFY0AMFMpoiik9lfVyZ7rkL/view"><img src="https://img.shields.io/badge/Presentation(Pdf)-000000?style=flat-square&logo=googledrive&logoColor=03fc07"/></a>  
+<a href="https://drive.google.com/file/d/1pWqdpWbXVxzCcAp7PEQPbqyDI7NJ-anw/view"><img src="https://img.shields.io/badge/Guideline-000000?style=flat-square&logo=googledrive&>logoColor=03fc07"/></a>
+
+---
+
 
 ## 1. Introduction
 > 안녕하세요! 저희는 AI의 A부터 I까지 모든 것을 경험할 준비가 된 열정 가득한 사람들이 모인**MNM**팀 입니다! 
@@ -23,55 +32,53 @@
 > "**뭐**든 **내**게 **물**어봐!"
 
 ### Members
-<<<<<<< HEAD
-|김태일|문찬국|이재학|하성진|한나연|
+[김태일](https://github.com/detailTales)|[문찬국](https://github.com/nonegom)|[이재학](https://github.com/wogkr810)|[하성진](https://github.com/maxha97)|[한나연](https://github.com/HanNayeoniee)|
 |:-:|:-:|:-:|:-:|:-:|
-[detailTales](https://github.com/detailTales)|[nonegom](https://github.com/nonegom)|[wogkr810](https://github.com/wogkr810)|[maxha97](https://github.com/maxha97)|[HanNayeoniee](https://github.com/HanNayeoniee)
 |<a href="https://github.com/detailTales"><img src="assets/profile/ty.png" width='300px'></a>|<a href="https://github.com/nonegom"><img src="assets/profile/cg.png" width='300px'></a>|<a href="https://github.com/wogkr810"><img src="assets/profile/jh.png" width='300px'></a>|<a href="https://github.com/maxha97"><img src="assets/profile/sj.png" width='300px'></a>|<a href="https://github.com/HanNayeoniee"><img src="assets/profile/ny.png" width='300px'></a>|
-=======
-
-김태일_T3063|문찬국_T3076|이재학_T3161|하성진_T3230|한나연_T3250|
-:-:|:-:|:-:|:-:|:-:
-<img src="assets/profile/ty.png" width='300px'></img>|<img src="assets/profile/cg.png" width='300px'></img>|<img src="assets/profile/jh.png" width='300px'></img>|<img src="assets/profile/sj.png" width='300px'></img>|<img src="assets/profile/ny.png" width='300px'></img>
-[detailTales](https://github.com/detailTales)|[nonegom](https://github.com/nonegom)|[wogkr810](https://github.com/wogkr810)|[maxha97](https://github.com/maxha97)|[HanNayeoniee](https://github.com/HanNayeoniee)
-gimty97@gmail.com|fksl9959@naver.com |jaehahk810@naver.com|maxha97@naver.com |nayeon2.han@gmail.com  
->>>>>>> origin/main
 
 ### Contribution
 
 | Member | Contribution | 
 | --- | --- |
-| 김태일 |  |
-| 문찬국 |  |
-| 이재학 |  |
-| 하성진 |  |
-| 한나연 |  |
+| 김태일 | 데이터 전처리, 학습 모델 Baseline 제작, Web 서비스 구축 |
+| 문찬국 | 데이터 가이드라인, Reader 모델, 발표 자료 제작 및 발표, 협업 관리 |
+| 이재학 | EDA, 데이터 전처리, 데이터 Augmentation, Reader 모델 |
+| 하성진 | Reader 모델, Retriever 모델, Telegram 서비스 구축 |
+| 한나연 | 데이터 가이드라인, Retriever 모델, Web 서비스 구축 |
+
+---
 
 ## 2. Proeject Outline
 
-> **프로젝트 주제** : 회의록을 활용한 Closed-Domain Question Answering(CDQA)
+**프로젝트 주제** : 회의록을 활용한 Closed-Domain Question Answering(CDQA)
 
-> **문제 정의**: 클로바 노트 등을 활용해 회의록을 쉽게 기록할 수 있게 됐지만, `정보 검색이 어렵다는 문제 발견`
+**프로젝트 주제 선정 기준** : 
+- **내가 겪은 어려움/불편함**을 해결할 수 있는가?
+- 부스트 캠프에서 **배운 내용을 활용해** **AI 프로젝트의 전 과정**을 모두 경험할 수 있는가?
+- **주어진 기간(3주)** 내에 완성할 수 있는가?
 
-> **개발 목표** : 사용자의 회의록 코퍼스에서 궁금한 질문을 주고 받을 수 있는 `회의록 QA` 모델 제작 
+**문제 정의**: 클로바 노트 등을 활용해 회의록을 쉽게 기록할 수 있게 됐지만, **정보 검색이 어렵다는 문제 발견**
+
+**개발 목표** : 사용자의 회의록 코퍼스에서 궁금한 질문을 주고 받을 수 있는 **회의록 QA** 모델 제작 
 
 ### **프로젝트 전체 구조** 
 
-<img src="assets/img/structure.png" width='300px'>
+<img src="assets/img/structure.png">
+
+---
+  
 
 ## 3. Demo
 
 ### 🖥️ Web 예시(Streamlit)
 
-<img src="assets/img/streamlit.png" width='300px'>
+<img src="assets/img/streamlit.gif">
 
 ### 📱 App 예시(Telegram)
 
-<img src="assets/img/telegram.png" width='300px'>
-<<<<<<< HEAD
-<img src="https://user-images.githubusercontent.com/53209003/172897310-7e1c3142-f97f-4f79-a45a-a43efeca019c.gif" width='300px'>
-=======
->>>>>>> origin/main
+<img src="assets/img/telegram.gif">
+
+---
 
 ## 4. Data
 
@@ -79,17 +86,9 @@ gimty97@gmail.com|fksl9959@naver.com |jaehahk810@naver.com|maxha97@naver.com |na
 
 > **Annotation Tool** : [Haystack](https://annotate.deepset.ai/)을 이용하여 데이터셋 태깅
 
-<<<<<<< HEAD
 > **Guideline** : [Guideline 문서](https://docs.google.com/document/d/113ta_VFzTiys3pfLDbOLUC-Ecr3Z9fH0/edit?rtpof=true)에 **FAQ** 작성 및 **질문 유형화**
 
-## 5. Model
-
-### Reader
->🤗[RoBERTa-Large Finetuning Twice(KLUE MRC)](https://huggingface.co/Nonegom/roberta_finetune_twice)  
->🤗[Finetuning Our Dataset](https://huggingface.co/wogkr810/mnm)
-
-=======
-> **Guideline** : [Guiddeline 문서](https://docs.google.com/document/d/113ta_VFzTiys3pfLDbOLUC-Ecr3Z9fH0/edit?rtpof=true)에 **FAQ** 작성 및 **질문 유형화**
+---
 
 ## 5. Model
 
@@ -97,21 +96,22 @@ gimty97@gmail.com|fksl9959@naver.com |jaehahk810@naver.com|maxha97@naver.com |na
 >🤗[RoBERTa-Large Finetuning Twice(KLUE MRC)](https://huggingface.co/Nonegom/roberta_finetune_twice)  
 >🤗[Finetuning Our Dataset](https://huggingface.co/wogkr810/mnm)
 
->>>>>>> origin/main
-<img src="assets/img/reader.png" width='300px'>
+<img src="assets/img/reader.png">
 
 
 ### Retriever
 
-<img src="assets/img/retriever.png" width='300px'>
+<img src="assets/img/retriever.png">
+
+---
 
 ## 6. How To Use
 
+### Service Setting
+> GPU : Tesla V100 32GB
+
 ### Installation
-<<<<<<< HEAD
 - [Elasticsearch 설치](https://github.com/boostcampaitech3/final-project-level3-nlp-09/blob/develop/model/README.md)를 먼저 진행해 주세요!
-=======
->>>>>>> origin/main
 
 ```
 # 파이썬 버전 확인 (3.8.5 확인)
@@ -135,20 +135,16 @@ deactivate
 
 ### Streamlit
 ```
-<<<<<<< HEAD
 streamlit run main.py
-=======
->>>>>>> origin/main
 ```
 
 ### Telegram
 ```
-<<<<<<< HEAD
 # 텔레그램 공식 챗봇 생성 절차를 진행하여 토큰을 부여 받아, 관련 정보를 코드에 추가 후 실행  
 python telegram_chatbot.py
-=======
->>>>>>> origin/main
 ```
+
+---
 
 ## 7. References
 
@@ -168,21 +164,56 @@ python telegram_chatbot.py
 - etc       : 기타
 ```
 
+### Code Structure
+```bash
+final-project-level3-nlp-09
+├── assets
+├── data
+├── data_augmentation
+│   ├── eda.py
+│   ├── aeda.py
+│   ├── pororomt.py
+│   ├── augmentation.ipynb
+├── data_utils
+│   ├── EDA.ipynb
+│   ├── data_split.ipynb
+│   ├── data_upload.ipynb
+│   ├── haystack_preprocess.ipynb
+│   ├── make_demo_txt.py
+├── model
+│   ├── README.md
+│   ├── arguments.py
+│   ├── elastic_setting.py
+│   ├── inference.py
+│   ├── retrieval.py
+│   ├── submission.py
+│   ├── topk_timer.py
+│   ├── train.py
+│   ├── trainer_qa.py
+│   ├── utils_qa.py
+│   ├── setting.json
+│   ├── sweep.yaml
+├── main_streamlit.py
+├── main_telegram.py
+├── README.md
+└── requirements.txt
+```
 ### Dataset
- >[데이콘 회의 녹취록 요약 경진대회](https://dacon.io/competitions/official/235813/overview/description)
-- 라이센스 : ??
+ - [데이콘 회의 녹취록 요약 경진대회](https://dacon.io/competitions/official/235813/overview/description)
+    - 라이센스 : https://dacon.io/competitions/official/235813/overview/agreement
 
 ### Paper : 
-> ~
-### Software
->#### Reader : 
--
->#### Retriever : 
-- 
-> #### Frameworks : 
+- [Fine-tuning Strategies for Domain Specific Question Answering under Low Annotation Budget Constraints](https://openreview.net/pdf?id=ks4BvF7kpiP)
+- [AEDA: An Easier Data Augmentation Technique for Text Classification](https://arxiv.org/abs/2108.13230)
+- [EDA: Easy Data Augmentation Techniques for Boosting Performance on Text Classification Tasks](https://arxiv.org/abs/1901.11196)
+
+#### Github : 
+- [Pororo](https://github.com/kakaobrain/pororo)
+- [Easy Data Augmentation(EDA)](https://github.com/catSirup/KorEDA)
+- [An Easier Data Augmentation(AEDA)](https://github.com/akkarimi/aeda_nlp)
+- [Elasticsearch](https://github.com/elastic/elasticsearch)
 - [Stremlit](https://github.com/streamlit/streamlit)
-<<<<<<< HEAD
 - [Telegram](https://github.com/python-telegram-bot/python-telegram-bot)
-=======
-- Telegram
->>>>>>> origin/main
+
+#### Youtube :
+- [삼성 SDS KorQuAD 1.0 Know-how](https://www.youtube.com/watch?v=ovD_87gHZO4&t=513s) 
