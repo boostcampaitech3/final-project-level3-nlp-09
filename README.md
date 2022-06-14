@@ -9,7 +9,7 @@
 2. [Project Outline](https://github.com/boostcampaitech3/final-project-level3-nlp-09#2-proeject-outline)
 3. [Demo](https://github.com/boostcampaitech3/final-project-level3-nlp-09#3-demo)
 4. [Data](https://github.com/boostcampaitech3/final-project-level3-nlp-09#4-data)
-5. [Model](https://github.com/boostcampaitech3/final-project-level3-nlp-09#5-model-1)
+5. [Model](https://github.com/boostcampaitech3/final-project-level3-nlp-09#5-model)
 6. [How To Use](https://github.com/boostcampaitech3/final-project-level3-nlp-09#6-how-to-use)
 7. [References](https://github.com/boostcampaitech3/final-project-level3-nlp-09#7-references)
 
@@ -18,7 +18,7 @@
 ## 0. Archive
 ><a href="https://www.youtube.com/watch?v=LoT7wuRPSHc"><img src="https://img.shields.io/badge/Presentation(Video)-000000?style=flat-square&logo=youtube&logoColor=fc2403"/></a>  
 <a href="https://drive.google.com/file/d/1ty1J-O7aqwFY0AMFMpoiik9lfVyZ7rkL/view"><img src="https://img.shields.io/badge/Presentation(Pdf)-000000?style=flat-square&logo=googledrive&logoColor=03fc07"/></a>  
-<a href="https://drive.google.com/file/d/1pWqdpWbXVxzCcAp7PEQPbqyDI7NJ-anw/view"><img src="https://img.shields.io/badge/Guideline-000000?style=flat-square&logo=googledrive&>logoColor=03fc07"/></a>
+<a href="https://drive.google.com/file/d/1pWqdpWbXVxzCcAp7PEQPbqyDI7NJ-anw/view"><img src="https://img.shields.io/badge/Guideline-000000?style=flat-square&logo=googledrive&logoColor=344ceb"/></a>
 
 ---
 
@@ -32,7 +32,7 @@
 > "**뭐**든 **내**게 **물**어봐!"
 
 ### Members
-[김태일](https://github.com/detailTales)|[문찬국](https://github.com/nonegom)|[이재학](https://github.com/wogkr810)|[하성진](https://github.com/maxha97)|[한나연](https://github.com/HanNayeoniee)|
+[김태일_T3063](https://github.com/detailTales)|[문찬국_T3076](https://github.com/nonegom)|[이재학_T3161](https://github.com/wogkr810)|[하성진_T3230](https://github.com/maxha97)|[한나연_T3250](https://github.com/HanNayeoniee)|
 |:-:|:-:|:-:|:-:|:-:|
 |<a href="https://github.com/detailTales"><img src="assets/profile/ty.png" width='300px'></a>|<a href="https://github.com/nonegom"><img src="assets/profile/cg.png" width='300px'></a>|<a href="https://github.com/wogkr810"><img src="assets/profile/jh.png" width='300px'></a>|<a href="https://github.com/maxha97"><img src="assets/profile/sj.png" width='300px'></a>|<a href="https://github.com/HanNayeoniee"><img src="assets/profile/ny.png" width='300px'></a>|
 
@@ -86,15 +86,15 @@
 
 > **Annotation Tool** : [Haystack](https://annotate.deepset.ai/)을 이용하여 데이터셋 태깅
 
-> **Guideline** : [Guideline 문서](https://docs.google.com/document/d/113ta_VFzTiys3pfLDbOLUC-Ecr3Z9fH0/edit?rtpof=true)에 **FAQ** 작성 및 **질문 유형화**
+> **Guideline** : [Guideline 문서](https://drive.google.com/file/d/1pWqdpWbXVxzCcAp7PEQPbqyDI7NJ-anw/view)에 **FAQ** 작성 및 **질문 유형화**
 
 ---
 
 ## 5. Model
 
 ### Reader
->🤗[RoBERTa-Large Finetuning Twice(KLUE MRC)](https://huggingface.co/Nonegom/roberta_finetune_twice)  
->🤗[Finetuning Our Dataset](https://huggingface.co/wogkr810/mnm)
+>🤗[RoBERTa-Large Finetuning Twice(MRC) : Nonegom/roberta_finetune_twice](https://huggingface.co/Nonegom/roberta_finetune_twice)  
+>🤗[Finetuning Our Dataset : wogkr810/mnm](https://huggingface.co/wogkr810/mnm)
 
 <img src="assets/img/reader.png">
 
@@ -212,7 +212,7 @@ final-project-level3-nlp-09
 - [Easy Data Augmentation(EDA)](https://github.com/catSirup/KorEDA)
 - [An Easier Data Augmentation(AEDA)](https://github.com/akkarimi/aeda_nlp)
 - [Elasticsearch](https://github.com/elastic/elasticsearch)
-- [Stremlit](https://github.com/streamlit/streamlit)
+- [Streamlit](https://github.com/streamlit/streamlit)
 - [Telegram](https://github.com/python-telegram-bot/python-telegram-bot)
 
 #### Youtube :
