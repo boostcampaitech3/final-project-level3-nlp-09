@@ -84,9 +84,9 @@
 
 > **Dataset** : [데이콘 회의 녹취록 요약 경진대회](https://dacon.io/competitions/official/235813/overview/description)의 의회 데이터를 이용하여 **직접 구축**
 
-> **Annotation Tool** : [Haystack](https://annotate.deepset.ai/)을 이용하여 데이터 태깅
+> **[Annotation Tool](https://github.com/boostcampaitech3/final-project-level3-nlp-09/blob/main/assets/annotation_tool_guideline.pdf)** : [Haystack](https://annotate.deepset.ai/)을 이용하여 데이터 태깅
 
-> **[Guideline](https://drive.google.com/file/d/1pWqdpWbXVxzCcAp7PEQPbqyDI7NJ-anw/view)** : **FAQ** 작성 및 **질문 유형화**
+> **[Guideline](https://github.com/boostcampaitech3/final-project-level3-nlp-09/blob/main/assets/MNM_data_guideline.pdf)** : **FAQ** 작성 및 **질문 유형화**
 
 ---
 
